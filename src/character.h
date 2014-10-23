@@ -19,7 +19,7 @@ typedef struct Char_T
 
 }character;
 
-
+void TeleportCharacter(character *ch, int new_level);
 void InitCharacter(character *sprite);
 void DrawCharacter(character* c1, SDL_Surface* screen, int currentLevel);
 void CharacterMove(character *sprite, Uint8* keys);

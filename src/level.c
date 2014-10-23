@@ -4,15 +4,70 @@
 extern SDL_Surface *screen; /*pointer to the draw buffer*/
 extern SDL_Surface *buffer; /*pointer to the background image buffer*/
 extern Map maps[MAX_MAPS];
+extern int g_currentLevel;
+
+int freadNumber(FILE *fp)
+{
+	int num;
+	char c;
+	num = 0;
+	while(1)
+	{
+		fread(&c,sizeof(char),1,fp);
+		if (c == ' ' || c == '\n')
+			break;
+		num = num * 10 + c - '0';
+		
+	}
+	return num;
+}
+
 
 void loadMap(Map *map, char *file)
 {
-	char c;
+	char c = '\n';
 	int i;
 	int j;
 	FILE *in;
 	in = fopen(file, "r");
+
+	map->start[0] = freadNumber(in);
+	map->start[1] = freadNumber(in);
+
 	for (i = 0; i<16;i++)  /** for loop to read tilenumber to tiles*/
+	{
+		for(j=0;j<16;j++)
+		{
+			do{
+				fread(&c,sizeof(char),1,in);
+			}while(c == '\n');
+			map->tiles[j][i].tnum = c;
+		}
+	}
+	for (i = 0; i<16;i++)  /** for loop to read passability to tiles*/
+	{
+		for(j=0;j<16;j++)
+		{
+			do{
+				fread(&c,sizeof(char),1,in);
+			}while(c == '\n');
+			map->tiles[j][i].pass = c;
+		}
+	}
+	for (i = 0; i<16;i++) /** for loop to read teleport number to tiles*/
+	{
+		for(j=0;j<16;j++)
+		{
+			do{
+				fread(&c,sizeof(char),1,in);
+			}while(c == '\n');
+			map->tiles[j][i].teleportnum = c - 1 - '0'; //THANKS BO!
+		}
+	}
+}
+/*
+	for (i = 0; i<16;i++)  /** for loop to read tilenumber to tiles*/
+	/*
 	{
 		for(j=0;j<16;j++)
 		{
@@ -20,31 +75,30 @@ void loadMap(Map *map, char *file)
 		}
 	}
 	for (i = 0; i<16;i++)  /** for loop to read passability to tiles*/
-	{
+/*	{
 		for(j=0;j<16;j++)
 		{
 			fread(&map->tiles[j][i].pass,sizeof(short),1,in);
 		}
 	}
-	for (i = 0; i<16;i++) /** for loop to read teleport number to tiles*/
-	{
+	*/
+/*	for (i = 0; i<16;i++) /** for loop to read teleport number to tiles*/
+/*	{
 		for(j=0;j<16;j++)
 		{
 			fread(&map->tiles[j][i].teleportnum,sizeof(int),1,in);
 		}
 	}
 }
-
+*/
 void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, Sprite *bloodtile, Sprite *doortile,Map *map)
 {
 	int i, j;
-	if (currentLevel == 0)  /*Draw level one */
-	{
 		for(i = 0; i < 16; i++)
 		{
 			for(j = 0; j < 16; j++)
 			{
-				switch(maps[0].tiles[i][j].tnum)
+				switch(maps[currentLevel].tiles[i][j].tnum)
 				{
 				case '&':
 					DrawSprite(grasstile,buffer,((i*64)%1024), ((j*48)%768), 0);
@@ -67,69 +121,6 @@ void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *
 				}
 			}
 		}
-	}
-	else if (currentLevel == 1)
-	{
-		for(i = 0; i < 16; i++)
-		{
-			for(j = 0; j < 16; j++)
-			{
-				switch(maps[1].tiles[i][j].tnum)
-				{
-				case '&':
-					DrawSprite(grasstile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case '#':
-					DrawSprite(walltile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case '*':
-					DrawSprite(castletile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case 'b':
-					DrawSprite(bloodtile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case 'd':
-					DrawSprite(doortile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				default:
-					DrawSprite(bordertile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				}
-			}
-		}
-	}
-
-	else if (currentLevel == 2)
-	{
-		for(i = 0; i < 16; i++)
-		{
-			for(j = 0; j < 16; j++)
-			{
-				switch(maps[2].tiles[i][j].tnum)
-				{
-				case '&':
-					DrawSprite(grasstile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case '#':
-					DrawSprite(walltile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case '*':
-					DrawSprite(castletile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case 'b':
-					DrawSprite(bloodtile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				case 'd':
-					DrawSprite(doortile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				default:
-					DrawSprite(bordertile,buffer,((i*64)%1024), ((j*48)%768), 0);
-					break;
-				}
-			}
-		}
-	}
-
 }
 
 /*

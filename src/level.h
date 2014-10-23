@@ -9,9 +9,9 @@
 typedef struct Tile_t
 {
 	char tnum;
-	short pass;
+	char pass;
 	struct charTile *onTile;
-	int teleportnum;
+	char teleportnum;
 }Tile;
 
 typedef struct Map_t

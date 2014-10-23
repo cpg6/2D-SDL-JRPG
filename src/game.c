@@ -11,6 +11,7 @@ extern SDL_Surface *screen;
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Rect Camera;
 Map maps[MAX_MAPS];
+int g_currentLevel;
 
 void Init_All();
 
@@ -34,10 +35,10 @@ int main(int argc, char *argv[])
 	//wall* w1;
 	//door* d1;
 	//enemy* e1;
-	int done, keyn, currentLevel,x ;
+	int done, keyn,x ;
 	Uint8 *keys;
 	Init_All();
-	currentLevel = 0; /* Set current level to first as default */
+	g_currentLevel = 1; /* Set current level to first as default */
 
 	temp = IMG_Load("images/AncientCastle.png");/*notice that the path is part of the filename*/
 	if(temp != NULL)						/*ALWAYS check your pointers before you use them*/
@@ -63,11 +64,9 @@ int main(int argc, char *argv[])
 	//InitWall(w1);
 	//InitDoor(d1);
 	//InitEnemy(e1);
-    
-
 	for(x=0;x<MAX_MAPS; x++)
 		loadMap(&maps[x],map_files[x]);
-    drawLevel(currentLevel,bordertile, grasstile, castletile, walltile, bloodtile, doortile, &maps[currentLevel]); /*draw level*/
+	TeleportCharacter(c1,g_currentLevel);
     done = 0;
     do
     {
@@ -75,7 +74,8 @@ int main(int argc, char *argv[])
 		ResetBuffer ();
 		DrawMouse();
 		CharacterMove(c1,keys);
-		DrawCharacter(c1,screen,currentLevel);
+		drawLevel(g_currentLevel,bordertile, grasstile, castletile, walltile, bloodtile, doortile, &maps[g_currentLevel]); /*draw level*/
+		DrawCharacter(c1,screen,g_currentLevel);
 		NextFrame();
 		SDL_PumpEvents();
 		
