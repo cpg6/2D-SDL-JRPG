@@ -24,11 +24,11 @@ void InitCharacter(character *sprite)
 void DrawCharacter(character *c1, SDL_Surface* screen, int currentLevel)
 {
 	//c1->frame = (c1->frame + 1)%4;
-	if (currentLevel == 1)
+	if (currentLevel == 0)
 		DrawSprite(c1->csprite,screen,c1->x,c1->y,c1->frame);
-	else if (currentLevel == 2)
+	else if (currentLevel == 1)
 		DrawSprite(c1->csprite,screen,(c1->x-272),(c1->y+25),c1->frame);
-	else if (currentLevel == 3)
+	else if (currentLevel == 2)
 		DrawSprite(c1->csprite,screen,(c1->x+304),(c1->y+25),c1->frame);
 	
 }
