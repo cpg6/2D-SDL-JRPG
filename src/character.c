@@ -31,7 +31,7 @@ void DrawCharacter(character *c1, SDL_Surface* screen, int currentLevel)
 	else if (g_currentLevel == 1)
 		DrawSprite(c1->csprite,screen,(c1->x),(c1->y),c1->frame);
 	else if (g_currentLevel == 2)
-		DrawSprite(c1->csprite,screen,(c1->x+304),(c1->y+25),c1->frame);
+		DrawSprite(c1->csprite,screen,(c1->x),(c1->y),c1->frame);
 	
 }
 
@@ -56,17 +56,22 @@ void CharacterMove(character *sprite, Uint8* keys)
 		{
 			sprite->x=sprite->x + 6;
 		}
+		else if(maps[g_currentLevel].tiles[tilex][tiley].teleportnum != -1)
+			TeleportCharacter(sprite, maps[g_currentLevel].tiles[tilex][tiley].teleportnum);
 	}
 	else if(keys[SDLK_s]|| keys[SDLK_DOWN])
 	{
 		sprite->y = sprite->y + 6;
 		tilex = sprite->x/64;
 		tiley = (sprite->y+48)/48;
+
 		if (maps[g_currentLevel].tiles[tilex][tiley].pass != '1')
 		{
 			sprite->y -= 6;
-		}else if(maps[g_currentLevel].tiles[tilex][tiley].teleportnum != -1)
+		}
+		else if(maps[g_currentLevel].tiles[tilex][tiley].teleportnum != -1)
 			TeleportCharacter(sprite, maps[g_currentLevel].tiles[tilex][tiley].teleportnum);
+
 		if(sprite->y+48 > S_Data.yres)
 			sprite->y -= 6;
 	}
@@ -81,6 +86,8 @@ void CharacterMove(character *sprite, Uint8* keys)
 		{
 			sprite->x=sprite->x - 6;
 		}
+		else if(maps[g_currentLevel].tiles[tilex][tiley].teleportnum != -1)
+			TeleportCharacter(sprite, maps[g_currentLevel].tiles[tilex][tiley].teleportnum);
 	}
 	else if(keys[SDLK_w]|| keys[SDLK_UP])
 	{
@@ -91,6 +98,8 @@ void CharacterMove(character *sprite, Uint8* keys)
 		{
 			sprite->y += 6;
 		}
+		else if(maps[g_currentLevel].tiles[tilex][tiley].teleportnum != -1)
+			TeleportCharacter(sprite, maps[g_currentLevel].tiles[tilex][tiley].teleportnum);
 		if(sprite->y < 0)
 			sprite->y += 6;
 	}

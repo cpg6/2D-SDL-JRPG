@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	int done, keyn,x ;
 	Uint8 *keys;
 	Init_All();
-	g_currentLevel = 1; /* Set current level to first as default */
+	g_currentLevel = 2; /* Set current level to first as default */
 
 	temp = IMG_Load("images/AncientCastle.png");/*notice that the path is part of the filename*/
 	if(temp != NULL)						/*ALWAYS check your pointers before you use them*/
