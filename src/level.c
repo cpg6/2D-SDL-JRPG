@@ -64,34 +64,22 @@ void loadMap(Map *map, char *file)
 			map->tiles[j][i].teleportnum = c - 1 - '0'; //THANKS BO!
 		}
 	}
-}
-/*
-	for (i = 0; i<16;i++)  /** for loop to read tilenumber to tiles*/
-	/*
+
+		for (i = 0; i<16;i++) /** for loop to read enemy spawn locations to tiles*/
 	{
 		for(j=0;j<16;j++)
 		{
-			fread(&map->tiles[j][i].tnum,sizeof(char),1,in);
-		}
-	}
-	for (i = 0; i<16;i++)  /** for loop to read passability to tiles*/
-/*	{
-		for(j=0;j<16;j++)
-		{
-			fread(&map->tiles[j][i].pass,sizeof(short),1,in);
-		}
-	}
-	*/
-/*	for (i = 0; i<16;i++) /** for loop to read teleport number to tiles*/
-/*	{
-		for(j=0;j<16;j++)
-		{
-			fread(&map->tiles[j][i].teleportnum,sizeof(int),1,in);
+			do{
+				fread(&c,sizeof(char),1,in);
+			}while(c == '\n');
+			map->tiles[j][i].enemySpawn = c;
 		}
 	}
 }
-*/
-void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, Sprite *bloodtile, Sprite *doortile,Map *map)
+
+
+void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, 
+	Sprite *bloodtile, Sprite *doortile,Map *map)
 {
 	int i, j;
 		for(i = 0; i < 16; i++)
@@ -121,6 +109,49 @@ void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *
 				}
 			}
 		}
+/*
+		for(i = 0; i < 16; i++) //Drawing enemies to the screen based on their position
+		{
+			for(j = 0; j < 16; j++)
+			{
+				switch(maps[currentLevel].tiles[i][j].enemySpawn)
+				{
+				case 'b':
+					DrawSprite(bishop,screen,((i*64)), ((j*48)), 0);
+					break;
+				default:
+					DrawSprite(ettin,screen,((i*64)), ((j*48)), 0);
+					break;
+				}
+			}
+		}
+*/
+}
+
+/* Preliminary attempt on level loading using tile based system
+	for (i = 0; i<16;i++)  /** for loop to read tilenumber to tiles*/
+	/*
+	{
+		for(j=0;j<16;j++)
+		{
+			fread(&map->tiles[j][i].tnum,sizeof(char),1,in);
+		}
+	}
+	for (i = 0; i<16;i++)  /** for loop to read passability to tiles*/
+/*	{
+		for(j=0;j<16;j++)
+		{
+			fread(&map->tiles[j][i].pass,sizeof(short),1,in);
+		}
+	}
+	*/
+/*	for (i = 0; i<16;i++) /** for loop to read teleport number to tiles*/
+/*	{
+		for(j=0;j<16;j++)
+		{
+			fread(&map->tiles[j][i].teleportnum,sizeof(int),1,in);
+		}
+	}
 }
 
 /*

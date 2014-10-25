@@ -6,6 +6,7 @@
 #include "level.h"
 #include "character.h"
 #include "collision.h"
+#include "enemy.h"
 
 extern SDL_Surface *screen;
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
@@ -25,6 +26,8 @@ int main(int argc, char *argv[])
 	SDL_Surface *bg;
 	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile; 
 	character* c1;
+	ettin* e1;
+	bishop* b1;
 	char *map_files[MAX_MAPS] = 
 	{	
 	"levels/map1.txt",
@@ -38,7 +41,7 @@ int main(int argc, char *argv[])
 	int done, keyn,x ;
 	Uint8 *keys;
 	Init_All();
-	g_currentLevel = 2; /* Set current level to first as default */
+	g_currentLevel = 0; /* Set current level to first as default */
 
 	temp = IMG_Load("images/AncientCastle.png");/*notice that the path is part of the filename*/
 	if(temp != NULL)						/*ALWAYS check your pointers before you use them*/
@@ -53,13 +56,17 @@ int main(int argc, char *argv[])
 	castletile = LoadSprite("images/castletile.png",64,48);
 	walltile = LoadSprite("images/wall.png",64,48);
 	bloodtile = LoadSprite("images/blood.png",64,48);
-	doortile = LoadSprite("images/door.png",64,48); 
+	doortile = LoadSprite("images/door.png",64,48);
     c1 = (character*) malloc(sizeof(character));
+	e1 = (ettin*) malloc(sizeof(ettin));
+	b1 = (bishop*) malloc(sizeof(bishop));
 	//b1 = (border*) malloc(sizeof(border));
 	//w1 = (wall*) malloc(sizeof(wall));
 	//d1 = (door*) malloc(sizeof(door));
 	//e1 = (enemy*) malloc(sizeof(enemy));
     InitCharacter(c1);
+	InitEttin(e1);
+	InitBishop(b1);
 	//InitBorder(b1);
 	//InitWall(w1);
 	//InitDoor(d1);
@@ -76,6 +83,7 @@ int main(int argc, char *argv[])
 		CharacterMove(c1,keys);
 		drawLevel(g_currentLevel,bordertile, grasstile, castletile, walltile, bloodtile, doortile, &maps[g_currentLevel]); /*draw level*/
 		DrawCharacter(c1,screen,g_currentLevel);
+		DrawEnemy(b1,e1,screen,g_currentLevel);
 		NextFrame();
 		SDL_PumpEvents();
 		

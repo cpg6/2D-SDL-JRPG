@@ -12,6 +12,7 @@ typedef struct Tile_t
 	char pass;
 	struct charTile *onTile;
 	char teleportnum;
+	char enemySpawn;				//handles spawn locations of enemies
 }Tile;
 
 typedef struct Map_t
@@ -24,7 +25,8 @@ typedef struct Map_t
 
 
 
-void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, Sprite *bloodtile, Sprite *doortile, Map *map); /*used to draw the level and update the levels */
+void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, 
+	Sprite *bloodtile, Sprite *doortile, Map *map); /*used to draw the level and update the levels */
 void loadMap(Map *map, char *file);
 
 #endif
