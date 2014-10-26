@@ -13,6 +13,7 @@ extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Rect Camera;
 Map maps[MAX_MAPS];
 int g_currentLevel;
+int g_enemySpawned;
 
 void Init_All();
 
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
 
 	SDL_Surface *temp;
 	SDL_Surface *bg;
-	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile; 
+	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile, *enemy_ettin, *enemy_bishop; 
 	character* c1;
 	ettin* e1;
 	bishop* b1;
@@ -34,15 +35,12 @@ int main(int argc, char *argv[])
 	"levels/map2.txt",
 	"levels/map3.txt"
 	};
-	//border* b1;
-	//wall* w1;
-	//door* d1;
-	//enemy* e1;
+
 	int done, keyn,x ;
 	Uint8 *keys;
 	Init_All();
 	g_currentLevel = 0; /* Set current level to first as default */
-
+	g_enemySpawned = 0; /**Set inital enemy spawn to true */
 	temp = IMG_Load("images/AncientCastle.png");/*notice that the path is part of the filename*/
 	if(temp != NULL)						/*ALWAYS check your pointers before you use them*/
 		bg = SDL_DisplayFormat(temp);
@@ -50,27 +48,23 @@ int main(int argc, char *argv[])
 	//  if(bg != NULL)
 	//   SDL_BlitSurface(bg,NULL,buffer,NULL);
 
-	/*set all the tiles to a sprite */
+
 	bordertile = LoadSprite("images/border.png",64,48);
 	grasstile = LoadSprite("images/deadgrass.png",64,48);
 	castletile = LoadSprite("images/castletile.png",64,48);
 	walltile = LoadSprite("images/wall.png",64,48);
 	bloodtile = LoadSprite("images/blood.png",64,48);
 	doortile = LoadSprite("images/door.png",64,48);
+	enemy_ettin = LoadSprite("images/ettin.png",36, 48);
+	enemy_bishop = LoadSprite("images/bishop.png",36, 48);
+
     c1 = (character*) malloc(sizeof(character));
 	e1 = (ettin*) malloc(sizeof(ettin));
 	b1 = (bishop*) malloc(sizeof(bishop));
-	//b1 = (border*) malloc(sizeof(border));
-	//w1 = (wall*) malloc(sizeof(wall));
-	//d1 = (door*) malloc(sizeof(door));
-	//e1 = (enemy*) malloc(sizeof(enemy));
     InitCharacter(c1);
 	InitEttin(e1);
 	InitBishop(b1);
-	//InitBorder(b1);
-	//InitWall(w1);
-	//InitDoor(d1);
-	//InitEnemy(e1);
+
 	for(x=0;x<MAX_MAPS; x++)
 		loadMap(&maps[x],map_files[x]);
 	TeleportCharacter(c1,g_currentLevel);
@@ -81,9 +75,10 @@ int main(int argc, char *argv[])
 		ResetBuffer ();
 		DrawMouse();
 		CharacterMove(c1,keys);
-		drawLevel(g_currentLevel,bordertile, grasstile, castletile, walltile, bloodtile, doortile, &maps[g_currentLevel]); /*draw level*/
+		EnemyThink(b1, e1, screen);
+		drawLevel(g_currentLevel,bordertile, grasstile, castletile, walltile, bloodtile, doortile, &maps[g_currentLevel], enemy_ettin, enemy_bishop, g_enemySpawned); /*draw level*/
 		DrawCharacter(c1,screen,g_currentLevel);
-		DrawEnemy(b1,e1,screen,g_currentLevel);
+		DrawEnemy(b1,e1,screen,g_currentLevel,g_enemySpawned);
 		NextFrame();
 		SDL_PumpEvents();
 		

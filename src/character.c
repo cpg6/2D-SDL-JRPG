@@ -5,6 +5,7 @@
 #include <stdlib.h>
 extern Map maps[MAX_MAPS];
 extern int g_currentLevel;
+extern int g_enemySpawned;
 extern ScreenData  S_Data;
 
 
@@ -40,6 +41,7 @@ void TeleportCharacter(character *ch, int new_level)
 	g_currentLevel = new_level;
 	ch->x = maps[new_level].start[0] * 64;
 	ch->y = maps[new_level].start[1] * 48;
+	g_enemySpawned = 0;
 }
 
 void CharacterMove(character *sprite, Uint8* keys)
@@ -92,16 +94,17 @@ void CharacterMove(character *sprite, Uint8* keys)
 	else if(keys[SDLK_w]|| keys[SDLK_UP])
 	{
 		sprite->y = sprite->y - 6;
-				tilex = sprite->x/64;
+		tilex = sprite->x/64;
 		tiley = sprite->y/48;
+		if(sprite->y < 0)
+			sprite->y += 6;
 		if (maps[g_currentLevel].tiles[tilex][tiley].pass != '1')
 		{
 			sprite->y += 6;
 		}
 		else if(maps[g_currentLevel].tiles[tilex][tiley].teleportnum != -1)
 			TeleportCharacter(sprite, maps[g_currentLevel].tiles[tilex][tiley].teleportnum);
-		if(sprite->y < 0)
-			sprite->y += 6;
+
 	}
 	else if (keys[SDLK_l])
 	{

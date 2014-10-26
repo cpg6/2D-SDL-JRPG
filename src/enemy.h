@@ -34,7 +34,8 @@ typedef struct Bishop_T
 
 void InitEttin(ettin *sprite);
 void InitBishop(bishop *sprite);
-void DrawEnemy(bishop* b1, ettin* e1, SDL_Surface* screen, int currentLevel);
+void DrawEnemy(bishop* b1, ettin* e1, SDL_Surface* screen, int currentLevel, int enemySpawned);
+void EnemyThink(bishop* b1, ettin* e1, SDL_Surface* screen);
 
 
 #endif

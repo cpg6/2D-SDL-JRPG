@@ -65,7 +65,7 @@ void loadMap(Map *map, char *file)
 		}
 	}
 
-		for (i = 0; i<16;i++) /** for loop to read enemy spawn locations to tiles*/
+	for (i = 0; i<16;i++) /** for loop to read enemy spawn locations to tiles*/
 	{
 		for(j=0;j<16;j++)
 		{
@@ -79,7 +79,7 @@ void loadMap(Map *map, char *file)
 
 
 void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, 
-	Sprite *bloodtile, Sprite *doortile,Map *map)
+	Sprite *bloodtile, Sprite *doortile,Map *map, Sprite *ettin, Sprite *bishop, int enemySpawned)
 {
 	int i, j;
 		for(i = 0; i < 16; i++)
@@ -109,23 +109,22 @@ void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *
 				}
 			}
 		}
-/*
-		for(i = 0; i < 16; i++) //Drawing enemies to the screen based on their position
+	/*
+		if (enemySpawned == 0)
 		{
-			for(j = 0; j < 16; j++)
+			for(i = 0; i < 16; i++) //Drawing enemies to the screen based on their position
 			{
-				switch(maps[currentLevel].tiles[i][j].enemySpawn)
+				for(j = 0; j < 16; j++)
 				{
-				case 'b':
-					DrawSprite(bishop,screen,((i*64)), ((j*48)), 0);
-					break;
-				default:
-					DrawSprite(ettin,screen,((i*64)), ((j*48)), 0);
-					break;
+					if (maps[currentLevel].tiles[i][j].enemySpawn == 'b')
+						DrawSprite(bishop,screen,((i*64)%1024), ((j*48)%768), 0);
+					else if (maps[currentLevel].tiles[i][j].enemySpawn == 'e')
+						DrawSprite(ettin,screen,((i*64)%1024), ((j*48)%768), 0);
+					
 				}
 			}
 		}
-*/
+		*/
 }
 
 /* Preliminary attempt on level loading using tile based system
