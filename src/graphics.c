@@ -124,7 +124,7 @@ void NextFrame()
   SDL_Flip(videobuffer);							/*and then update the screen*/
   Then = NOW;									/*these next few lines  are used to show how long each frame takes to update.  */
   NOW = SDL_GetTicks();
-  fprintf(stdout,"Ticks passed this frame: %i\n", NOW - Then);
+  //fprintf(stdout,"Ticks passed this frame: %i\n", NOW - Then);
   FrameDelay(33); /*this will make your frame rate about 30 frames per second.  If you want 60 fps then set it to about 15 or 16*/
 }
 

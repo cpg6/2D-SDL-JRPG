@@ -20,8 +20,8 @@ void InitCharacter(character *sprite)
 	sprite->frame = 0;
 	sprite->collision.h = 48;
 	sprite->collision.w = 36;
-	sprite->collision.x = 0;
-	sprite->collision.y = 0;
+	sprite->collision.x = 496;
+	sprite->collision.y = 588;
 }
 
 void DrawCharacter(character *c1, SDL_Surface* screen, int currentLevel)
@@ -33,6 +33,8 @@ void DrawCharacter(character *c1, SDL_Surface* screen, int currentLevel)
 		DrawSprite(c1->csprite,screen,(c1->x),(c1->y),c1->frame);
 	else if (g_currentLevel == 2)
 		DrawSprite(c1->csprite,screen,(c1->x),(c1->y),c1->frame);
+	c1->collision.x = c1->x;
+	c1->collision.y = c1->y;
 	
 }
 

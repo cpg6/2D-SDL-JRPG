@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	"levels/map2.txt",
 	"levels/map3.txt"
 	};
-
+	int collision1, collision2;
 	int done, keyn,x ;
 	Uint8 *keys;
 	Init_All();
@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
     done = 0;
     do
     {
+		collision1 = checkCollision(c1->collision,b1->collision);
+		collision2 = checkCollision(c1->collision,e1->collision);
 		keys = SDL_GetKeyState(&keyn);
 		ResetBuffer ();
 		DrawMouse();
@@ -81,6 +83,10 @@ int main(int argc, char *argv[])
 		DrawEnemy(b1,e1,screen,g_currentLevel,g_enemySpawned);
 		NextFrame();
 		SDL_PumpEvents();
+		if (collision1 == 1)
+			printf("COLLISION DETECTED!!!!!!! BISHOP \n");
+		if (collision2 == 1)
+			printf("COLLISION DETECTED!!!!!!! ETTIN \n");
 		
 		// if(SDL_GetMouseState(&mx,&my))
 		// {

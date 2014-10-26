@@ -13,13 +13,13 @@ void InitEttin(ettin *sprite)
 	sprite->y = 269;
 	sprite->esprite = LoadSprite("images/ettin.png",36, 48);
 	sprite->exp = 30;
-	sprite->health = 100;
+	sprite->health = 80;
 	sprite->flag = 0;
 	sprite->frame = 0;
 	sprite->collision.h = 48;
 	sprite->collision.w = 36;
-	sprite->collision.x = 0;
-	sprite->collision.y = 0;
+	sprite->collision.x = 256;
+	sprite->collision.y = 269;
 }
 
 void InitBishop(bishop *sprite)
@@ -28,19 +28,23 @@ void InitBishop(bishop *sprite)
 	sprite->y = 538;
 	sprite->bsprite = LoadSprite("images/bishop.png",36, 48);
 	sprite->exp = 75;
-	sprite->health = 100;
+	sprite->health = 45;
 	sprite->flag = 0;
 	sprite->frame = 0;
 	sprite->collision.h = 48;
 	sprite->collision.w = 36;
-	sprite->collision.x = 0;
-	sprite->collision.y = 0;
+	sprite->collision.x = 768;
+	sprite->collision.y = 538;
 }
 
 void DrawEnemy(bishop *b1, ettin *e1, SDL_Surface* screen, int currentLevel, int enemySpawned)
 {
 	DrawSprite(b1->bsprite,screen,b1->x,b1->y,b1->frame);
+	b1->collision.x = b1->x;
+	b1->collision.y = b1->y;
 	DrawSprite(e1->esprite,screen,e1->x,e1->y,e1->frame);
+	e1->collision.x = e1->x;
+	e1->collision.y = e1->y;
 }
 
 void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)

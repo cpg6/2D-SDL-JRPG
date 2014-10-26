@@ -1,13 +1,13 @@
 #include "graphics.h"
 #include "character.h"
+#include "enemy.h"
 
 
-int checkCollision(SDL_Rect *r1, SDL_Rect *r2)
+int checkCollision(SDL_Rect rec1, SDL_Rect rec2)
 {
-	if(!(r2->x > (r1->x + r1->w) || 
-        (r2->x + r2->w) < r1->x  || 
-		 r2->y > (r1->y + r1->h) ||
-        (r2->y + r2->h) < r1->y))
-		return 0;
-	return 1;
+	if((rec1.x + rec1.w) >= rec2.x && (rec2.x + rec2.w) >= rec1.x && (rec1.y + rec1.h) >= rec2.y && (rec2.y + rec2.h) >= rec1.y)
+	{
+		return 1;
+	}
+	return 0;
 }
