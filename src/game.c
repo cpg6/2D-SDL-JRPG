@@ -118,6 +118,11 @@ int main(int argc, char *argv[])
 
 				DrawPCs(f1, m1, screen);
 				DrawEnemy_C(b1, e1, g_combatState, screen);
+
+				if(keys[SDLK_g])
+				{
+					b1->health = b1->health - f1->attack + b1->defense;
+				}
 				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
 				
 			}
@@ -132,19 +137,24 @@ int main(int argc, char *argv[])
 
 				DrawPCs(f1, m1, screen);
 				DrawEnemy_C(b1, e1, g_combatState, screen);
+
+				if(keys[SDLK_g])
+				{
+					e1->health = e1->health - f1->attack + e1->defense;
+				}
 				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
 			}
 			NextFrame();
 			SDL_PumpEvents();
 
-			if(keys[SDLK_ESCAPE] && g_combatState == 1)
+			if(b1->health <= 0 && g_combatState == 1)
 			{
 				g_combatState = 0; //Temporary end condition for testing
 				SDL_FreeSurface(bg);
 				FreeBishop(b1);
 			}
 
-			if(keys[SDLK_ESCAPE] && g_combatState == 2)
+			if(e1->health <= 0 && g_combatState == 2)
 			{
 				g_combatState = 0; //Temporary end condition for testing
 				SDL_FreeSurface(bg);
@@ -169,7 +179,7 @@ int main(int argc, char *argv[])
 		//DrawSprite(tile,buffer,(mx /32) * 32,(my /32) * 32,0); 
 		
 		//}
-		//if(keys[SDLK_ESCAPE])done = 1;
+		if(keys[SDLK_ESCAPE])done = 1;
   }while(!done);
   FreeCharacter(c1);
   CloseSprites();
