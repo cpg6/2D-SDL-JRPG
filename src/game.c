@@ -11,8 +11,8 @@
 extern SDL_Surface *screen;
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Rect Camera;
-extern SDL_Surface *combatscreen;
-extern SDL_Surface *combatbuffer;
+//extern SDL_Surface *combatscreen;
+//extern SDL_Surface *combatbuffer;
 Map maps[MAX_MAPS];
 int g_currentLevel;
 int g_enemySpawned;
@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
 	character* c1;
 	ettin* e1;
 	bishop* b1;
+	fighter* f1;
+	mage* m1;
 	char *map_files[MAX_MAPS] = 
 	{	
 	"levels/map1.txt",
@@ -65,9 +67,12 @@ int main(int argc, char *argv[])
     c1 = (character*) malloc(sizeof(character));
 	e1 = (ettin*) malloc(sizeof(ettin));
 	b1 = (bishop*) malloc(sizeof(bishop));
+	f1 = (fighter*) malloc(sizeof(fighter));
+	m1 = (mage*) malloc(sizeof(mage));
     InitCharacter(c1);
 	InitEttin(e1);
 	InitBishop(b1);
+	
 
 	for(x=0;x<MAX_MAPS; x++)
 		loadMap(&maps[x],map_files[x]);
@@ -81,11 +86,15 @@ int main(int argc, char *argv[])
 		{
 			printf("COLLISION DETECTED!!!!!!! BISHOP \n");
 			g_combatState = 1;
+			InitFighter(f1);
+			InitMage(m1);
 		}
 		if (collision2 == 1)
 		{
 			printf("COLLISION DETECTED!!!!!!! ETTIN \n");
 			g_combatState = 2;
+			InitFighter(f1);
+			InitMage(m1);
 		}
 		keys = SDL_GetKeyState(&keyn);
 		ResetBuffer ();
@@ -103,9 +112,12 @@ int main(int argc, char *argv[])
 			{
 				if(temp != NULL)						
 					bg = SDL_DisplayFormat(temp);
+
 				if(bg != NULL)
 					SDL_BlitSurface(bg,NULL,buffer,NULL);
 
+				DrawPCs(f1, m1, screen);
+				DrawEnemy_C(b1, e1, g_combatState, screen);
 				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
 				
 			}
@@ -114,11 +126,13 @@ int main(int argc, char *argv[])
 			{
 				if(temp != NULL)						
 					bg = SDL_DisplayFormat(temp);
+
 				if(bg != NULL)
 					SDL_BlitSurface(bg,NULL,buffer,NULL);
 
+				DrawPCs(f1, m1, screen);
+				DrawEnemy_C(b1, e1, g_combatState, screen);
 				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
-				//FreeEttin(e1);
 			}
 			NextFrame();
 			SDL_PumpEvents();

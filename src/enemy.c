@@ -11,9 +11,14 @@ void InitEttin(ettin *sprite)
 {
 	sprite->x = 256;
 	sprite->y = 269;
+	sprite->cx = 300;
+	sprite->cy = 300;
 	sprite->esprite = LoadSprite("images/ettin.png",36, 48);
+	sprite->esprite_c = LoadSprite("images/ettin2.png",256,192);
 	sprite->exp = 30;
 	sprite->health = 80;
+	sprite->attack = 15;
+	sprite->defense = 3;
 	sprite->flag = 0;
 	sprite->frame = 0;
 	sprite->collision.h = 48;
@@ -26,9 +31,14 @@ void InitBishop(bishop *sprite)
 {
 	sprite->x = 768;
 	sprite->y = 538;
+	sprite->cx = 300;
+	sprite->cy = 300;
 	sprite->bsprite = LoadSprite("images/bishop.png",36, 48);
+	sprite->bsprite_c = LoadSprite("images/bishop2.png",256,192);
 	sprite->exp = 75;
 	sprite->health = 45;
+	sprite->attack = 25;
+	sprite->defense = 0;
 	sprite->flag = 0;
 	sprite->frame = 0;
 	sprite->collision.h = 48;
@@ -51,6 +61,19 @@ void DrawEnemy(bishop *b1, ettin *e1, SDL_Surface* screen, int currentLevel, int
 		e1->collision.x = e1->x;
 		e1->collision.y = e1->y;
 	}
+}
+
+void DrawEnemy_C(bishop* b1, ettin* e1, int combatLevel, SDL_Surface* screen)
+{
+	if (e1->esprite != NULL && combatLevel == 2)
+	{
+		DrawSprite(e1->esprite_c,screen,e1->cx,e1->cy,e1->frame);
+	}
+	if (b1->bsprite != NULL && combatLevel == 1)
+	{
+		DrawSprite(b1->bsprite_c,screen,b1->cx,b1->cy,b1->frame);
+	}
+
 }
 
 void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)

@@ -1,6 +1,7 @@
 /* Characters */
 #include "character.h"
 #include "collision.h"
+#include "enemy.h"
 #include "level.h"
 #include <stdlib.h>
 extern Map maps[MAX_MAPS];
@@ -14,14 +15,40 @@ void InitCharacter(character *sprite)
 	sprite->x = 496;
 	sprite->y = 588;
 	sprite->csprite = LoadSprite("images/cyan.png",36, 48);
-	sprite->exp = 0;
-	sprite->health = 100;
 	sprite->flag = 0;
 	sprite->frame = 0;
 	sprite->collision.h = 48;
 	sprite->collision.w = 36;
 	sprite->collision.x = 496;
 	sprite->collision.y = 588;
+}
+
+void InitFighter(fighter *sprite)
+{
+	sprite->x = 800;
+	sprite->y = 300;
+	sprite->fsprite = LoadSprite("images/fighter.png",36,48);
+	sprite->exp = 0;
+	sprite->attack = 40;
+	sprite->defense = 10;
+
+}
+void InitMage(mage *sprite)
+{
+	sprite->x = 800;
+	sprite->y = 600;
+	sprite->msprite = LoadSprite("images/mage.png",36,48);
+	sprite->exp = 0;
+	sprite->attack = 60;
+	sprite->defense = 2;
+
+}
+
+void DrawPCs(fighter* f1, mage* m1, SDL_Surface* screen)
+{
+	DrawSprite(f1->fsprite,screen,f1->x,f1->y,0);
+	DrawSprite(m1->msprite,screen,m1->x,m1->y,0);
+
 }
 
 void DrawCharacter(character *c1, SDL_Surface* screen, int currentLevel)
