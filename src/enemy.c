@@ -39,12 +39,18 @@ void InitBishop(bishop *sprite)
 
 void DrawEnemy(bishop *b1, ettin *e1, SDL_Surface* screen, int currentLevel, int enemySpawned)
 {
-	DrawSprite(b1->bsprite,screen,b1->x,b1->y,b1->frame);
-	b1->collision.x = b1->x;
-	b1->collision.y = b1->y;
-	DrawSprite(e1->esprite,screen,e1->x,e1->y,e1->frame);
-	e1->collision.x = e1->x;
-	e1->collision.y = e1->y;
+	if (b1->bsprite != NULL)
+	{
+		DrawSprite(b1->bsprite,screen,b1->x,b1->y,b1->frame);
+		b1->collision.x = b1->x;
+		b1->collision.y = b1->y;
+	}
+	if (e1->esprite != NULL)
+	{
+		DrawSprite(e1->esprite,screen,e1->x,e1->y,e1->frame);
+		e1->collision.x = e1->x;
+		e1->collision.y = e1->y;
+	}
 }
 
 void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
@@ -156,5 +162,18 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 		}
 	}
 
+
+}
+
+void FreeBishop(bishop *b1)
+{
+	FreeSprite(b1->bsprite);
+	memset(b1,0,sizeof(bishop));
+}
+
+void FreeEttin(ettin *e1)
+{
+	FreeSprite(e1->esprite);
+	memset(e1,0,sizeof(ettin));
 
 }

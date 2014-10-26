@@ -11,9 +11,12 @@
 extern SDL_Surface *screen;
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Rect Camera;
+extern SDL_Surface *combatscreen;
+extern SDL_Surface *combatbuffer;
 Map maps[MAX_MAPS];
 int g_currentLevel;
 int g_enemySpawned;
+int g_combatState;
 
 void Init_All();
 
@@ -25,7 +28,7 @@ int main(int argc, char *argv[])
 
 	SDL_Surface *temp;
 	SDL_Surface *bg;
-	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile, *enemy_ettin, *enemy_bishop; 
+	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile, *enemy_ettin, *enemy_bishop, *combat_bg; 
 	character* c1;
 	ettin* e1;
 	bishop* b1;
@@ -39,14 +42,14 @@ int main(int argc, char *argv[])
 	int done, keyn,x ;
 	Uint8 *keys;
 	Init_All();
-	g_currentLevel = 0; /* Set current level to first as default */
+	g_currentLevel = 0; /** Set current level to first as default */
 	g_enemySpawned = 0; /**Set inital enemy spawn to true */
-	temp = IMG_Load("images/AncientCastle.png");/*notice that the path is part of the filename*/
-	if(temp != NULL)						/*ALWAYS check your pointers before you use them*/
-		bg = SDL_DisplayFormat(temp);
-	SDL_FreeSurface(temp);
-	//  if(bg != NULL)
-	//   SDL_BlitSurface(bg,NULL,buffer,NULL);
+	g_combatState = 0; /** Set initial combat state to false or 0*/
+	
+	temp = IMG_Load("images/battle.png");/*notice that the path is part of the filename*/
+	//if(bg != NULL)
+		//SDL_BlitSurface(bg,NULL,buffer,NULL);
+	//SDL_FreeSurface(temp);
 
 
 	bordertile = LoadSprite("images/border.png",64,48);
@@ -57,6 +60,7 @@ int main(int argc, char *argv[])
 	doortile = LoadSprite("images/door.png",64,48);
 	enemy_ettin = LoadSprite("images/ettin.png",36, 48);
 	enemy_bishop = LoadSprite("images/bishop.png",36, 48);
+	combat_bg = LoadSprite("images/battle.png",1024,768);
 
     c1 = (character*) malloc(sizeof(character));
 	e1 = (ettin*) malloc(sizeof(ettin));
@@ -73,8 +77,71 @@ int main(int argc, char *argv[])
     {
 		collision1 = checkCollision(c1->collision,b1->collision);
 		collision2 = checkCollision(c1->collision,e1->collision);
+		if (collision1 == 1)
+		{
+			printf("COLLISION DETECTED!!!!!!! BISHOP \n");
+			g_combatState = 1;
+		}
+		if (collision2 == 1)
+		{
+			printf("COLLISION DETECTED!!!!!!! ETTIN \n");
+			g_combatState = 2;
+		}
 		keys = SDL_GetKeyState(&keyn);
 		ResetBuffer ();
+
+		//==================================================================================
+		// Combat Loop
+		//==================================================================================
+
+		while (g_combatState > 0) /** Loop for combat screen */
+		{
+			keys = SDL_GetKeyState(&keyn);
+			ResetBuffer ();
+			
+			if (g_combatState == 1) //Bishop combat window
+			{
+				if(temp != NULL)						
+					bg = SDL_DisplayFormat(temp);
+				if(bg != NULL)
+					SDL_BlitSurface(bg,NULL,buffer,NULL);
+
+				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
+				
+			}
+
+			if (g_combatState == 2) //Ettin combat window
+			{
+				if(temp != NULL)						
+					bg = SDL_DisplayFormat(temp);
+				if(bg != NULL)
+					SDL_BlitSurface(bg,NULL,buffer,NULL);
+
+				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
+				//FreeEttin(e1);
+			}
+			NextFrame();
+			SDL_PumpEvents();
+
+			if(keys[SDLK_ESCAPE] && g_combatState == 1)
+			{
+				g_combatState = 0; //Temporary end condition for testing
+				SDL_FreeSurface(bg);
+				FreeBishop(b1);
+			}
+
+			if(keys[SDLK_ESCAPE] && g_combatState == 2)
+			{
+				g_combatState = 0; //Temporary end condition for testing
+				SDL_FreeSurface(bg);
+				FreeEttin(e1);
+			}
+		}
+
+		//==================================================================================
+		// END Combat Loop
+		//==================================================================================
+
 		DrawMouse();
 		CharacterMove(c1,keys);
 		EnemyThink(b1, e1, screen);
@@ -83,17 +150,12 @@ int main(int argc, char *argv[])
 		DrawEnemy(b1,e1,screen,g_currentLevel,g_enemySpawned);
 		NextFrame();
 		SDL_PumpEvents();
-		if (collision1 == 1)
-			printf("COLLISION DETECTED!!!!!!! BISHOP \n");
-		if (collision2 == 1)
-			printf("COLLISION DETECTED!!!!!!! ETTIN \n");
-		
 		// if(SDL_GetMouseState(&mx,&my))
 		// {
 		//DrawSprite(tile,buffer,(mx /32) * 32,(my /32) * 32,0); 
 		
 		//}
-		if(keys[SDLK_ESCAPE])done = 1;
+		//if(keys[SDLK_ESCAPE])done = 1;
   }while(!done);
   FreeCharacter(c1);
   CloseSprites();

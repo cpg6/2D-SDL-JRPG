@@ -16,7 +16,7 @@ int freadNumber(FILE *fp)
 		fread(&c,sizeof(char),1,fp);
 		if (c == ' ' || c == '\n')
 			break;
-		num = num * 10 + c - '0';
+		num = num * 10 + c - '0'; //THANKS BO!
 		
 	}
 	return num;
