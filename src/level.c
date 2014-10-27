@@ -1,8 +1,8 @@
 #include "graphics.h"
 #include "level.h"
 
-extern SDL_Surface *screen; /*pointer to the draw buffer*/
-extern SDL_Surface *buffer; /*pointer to the background image buffer*/
+extern SDL_Surface *screen;										/*pointer to the draw buffer*/
+extern SDL_Surface *buffer;										/*pointer to the background image buffer*/
 extern Map maps[MAX_MAPS];
 extern int g_currentLevel;
 
@@ -34,7 +34,7 @@ void loadMap(Map *map, char *file)
 	map->start[0] = freadNumber(in);
 	map->start[1] = freadNumber(in);
 
-	for (i = 0; i<16;i++)  /** for loop to read tilenumber to tiles*/
+	for (i = 0; i<16;i++)												/** for loop to read tilenumber to tiles*/
 	{
 		for(j=0;j<16;j++)
 		{
@@ -44,7 +44,7 @@ void loadMap(Map *map, char *file)
 			map->tiles[j][i].tnum = c;
 		}
 	}
-	for (i = 0; i<16;i++)  /** for loop to read passability to tiles*/
+	for (i = 0; i<16;i++)												/** for loop to read passability to tiles*/
 	{
 		for(j=0;j<16;j++)
 		{
@@ -54,7 +54,7 @@ void loadMap(Map *map, char *file)
 			map->tiles[j][i].pass = c;
 		}
 	}
-	for (i = 0; i<16;i++) /** for loop to read teleport number to tiles*/
+	for (i = 0; i<16;i++)												/** for loop to read teleport number to tiles*/
 	{
 		for(j=0;j<16;j++)
 		{
@@ -65,7 +65,7 @@ void loadMap(Map *map, char *file)
 		}
 	}
 
-	for (i = 0; i<16;i++) /** for loop to read enemy spawn locations to tiles*/
+	for (i = 0; i<16;i++)												/** for loop to read enemy spawn locations to tiles*/
 	{
 		for(j=0;j<16;j++)
 		{

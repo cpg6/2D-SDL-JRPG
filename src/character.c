@@ -31,6 +31,7 @@ void InitFighter(fighter *sprite)
 	sprite->exp = 0;
 	sprite->attack = 40;
 	sprite->defense = 10;
+	sprite->nextlvl = 50;
 
 }
 void InitMage(mage *sprite)
@@ -41,6 +42,7 @@ void InitMage(mage *sprite)
 	sprite->exp = 0;
 	sprite->attack = 60;
 	sprite->defense = 2;
+	sprite->nextlvl = 50;
 
 }
 

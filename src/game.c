@@ -7,12 +7,11 @@
 #include "character.h"
 #include "collision.h"
 #include "enemy.h"
+//#include "SDL_ttf.h"
 
 extern SDL_Surface *screen;
 extern SDL_Surface *buffer; /*pointer to the draw buffer*/
 extern SDL_Rect Camera;
-//extern SDL_Surface *combatscreen;
-//extern SDL_Surface *combatbuffer;
 Map maps[MAX_MAPS];
 int g_currentLevel;
 int g_enemySpawned;
@@ -28,6 +27,9 @@ int main(int argc, char *argv[])
 
 	SDL_Surface *temp;
 	SDL_Surface *bg;
+	//SDL_Surface *fontSurface;
+	//TTF_Font *font;
+	//SDL_Color text_color;
 	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile, *enemy_ettin, *enemy_bishop, *combat_bg; 
 	character* c1;
 	ettin* e1;
@@ -41,22 +43,31 @@ int main(int argc, char *argv[])
 	"levels/map3.txt"
 	};
 	int collision1, collision2;
-	int done, keyn,x ;
+	int done, keyn,x , tempExp, tempExp2;
 	Uint8 *keys;
 	Init_All();
-	g_currentLevel = 0; /** Set current level to first as default */
-	g_enemySpawned = 0; /**Set inital enemy spawn to true */
-	g_combatState = 0; /** Set initial combat state to false or 0*/
+
+																			/** Fonts Need Attention to be Fixed, currently a mess
+    font = TTF_OpenFont("fonts/font2.ttf",16);
+	text_color.r = 255;
+	text_color.b = 255;
+	text_color.g = 255;
+	fontSurface = TTF_RenderText_Solid(font, , text_color);
+    fontRect.x = x;
+    fontRect.y = y;
+    SDL_BlitSurface(fontSurface, NULL, screen, &fontRect);
+	*/
+
+	g_currentLevel = 0;														/** Set current level to first as default */
+	g_enemySpawned = 0;														/** Wound up not needing this -- FIXTHIS -- */
+	g_combatState = 0;														/** Set initial combat state to false or 0*/
 	
-	temp = IMG_Load("images/battle.png");/*notice that the path is part of the filename*/
-	//if(bg != NULL)
-		//SDL_BlitSurface(bg,NULL,buffer,NULL);
-	//SDL_FreeSurface(temp);
+	temp = IMG_Load("images/battle.png");									/** load the battle stage background into memory*/
 
 
-	bordertile = LoadSprite("images/border.png",64,48);
-	grasstile = LoadSprite("images/deadgrass.png",64,48);
-	castletile = LoadSprite("images/castletile.png",64,48);
+	bordertile = LoadSprite("images/border.png",64,48);						/** load all tile sprites into memory */
+	grasstile = LoadSprite("images/deadgrass.png",64,48);					/** load all tile sprites into memory */
+	castletile = LoadSprite("images/castletile.png",64,48);					/** load all tile sprites into memory */
 	walltile = LoadSprite("images/wall.png",64,48);
 	bloodtile = LoadSprite("images/blood.png",64,48);
 	doortile = LoadSprite("images/door.png",64,48);
@@ -64,7 +75,7 @@ int main(int argc, char *argv[])
 	enemy_bishop = LoadSprite("images/bishop.png",36, 48);
 	combat_bg = LoadSprite("images/battle.png",1024,768);
 
-    c1 = (character*) malloc(sizeof(character));
+    c1 = (character*) malloc(sizeof(character));							/**allocate memory for all sprites/entities and init them! */
 	e1 = (ettin*) malloc(sizeof(ettin));
 	b1 = (bishop*) malloc(sizeof(bishop));
 	f1 = (fighter*) malloc(sizeof(fighter));
@@ -73,25 +84,25 @@ int main(int argc, char *argv[])
 	InitEttin(e1);
 	InitBishop(b1);
 	
-
-	for(x=0;x<MAX_MAPS; x++)
+	
+	for(x=0;x<MAX_MAPS; x++)												/** Load the maps from text files into memory */
 		loadMap(&maps[x],map_files[x]);
-	TeleportCharacter(c1,g_currentLevel);
+	TeleportCharacter(c1,g_currentLevel);									/**Conduct the first teleport of the character at start */
     done = 0;
     do
     {
-		collision1 = checkCollision(c1->collision,b1->collision);
-		collision2 = checkCollision(c1->collision,e1->collision);
+		collision1 = checkCollision(c1->collision,b1->collision);			/** Continuously check if there is a collision detected */
+		collision2 = checkCollision(c1->collision,e1->collision);			/** Continuously check if there is a collision detected */
 		if (collision1 == 1)
 		{
-			printf("COLLISION DETECTED!!!!!!! BISHOP \n");
+			printf("COLLISION DETECTED!!!!!!! BISHOP \n");					/** if collided w/ bishop set combat state and Init */
 			g_combatState = 1;
 			InitFighter(f1);
 			InitMage(m1);
 		}
 		if (collision2 == 1)
 		{
-			printf("COLLISION DETECTED!!!!!!! ETTIN \n");
+			printf("COLLISION DETECTED!!!!!!! ETTIN \n");					/** if collided w/ ettin set combat state and Init */
 			g_combatState = 2;
 			InitFighter(f1);
 			InitMage(m1);
@@ -103,62 +114,100 @@ int main(int argc, char *argv[])
 		// Combat Loop
 		//==================================================================================
 
-		while (g_combatState > 0) /** Loop for combat screen */
+		while (g_combatState > 0)											/** Loop for combat screen */
 		{
 			keys = SDL_GetKeyState(&keyn);
 			ResetBuffer ();
 			
-			if (g_combatState == 1) //Bishop combat window
+			if (g_combatState == 1)											/** if collided with a bishop, enter combat with a bishop */
 			{
 				if(temp != NULL)						
 					bg = SDL_DisplayFormat(temp);
 
 				if(bg != NULL)
-					SDL_BlitSurface(bg,NULL,buffer,NULL);
+					SDL_BlitSurface(bg,NULL,buffer,NULL);					/** Draw the combat background */
 
-				DrawPCs(f1, m1, screen);
-				DrawEnemy_C(b1, e1, g_combatState, screen);
+				DrawPCs(f1, m1, screen);									/** Draw the playable characters to the screen */
+				DrawEnemy_C(b1, e1, g_combatState, screen);					/** Draw Enemy Combatants */
 
-				if(keys[SDLK_g])
+				if(keys[SDLK_g])											/** conduct an attack */
 				{
 					b1->health = b1->health - f1->attack + b1->defense;
 				}
-				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
 				
 			}
 
-			if (g_combatState == 2) //Ettin combat window
+			if (g_combatState == 2)											/** if collided with a ettin, enter combat with a ettin */
 			{
 				if(temp != NULL)						
 					bg = SDL_DisplayFormat(temp);
 
 				if(bg != NULL)
-					SDL_BlitSurface(bg,NULL,buffer,NULL);
+					SDL_BlitSurface(bg,NULL,buffer,NULL);					/** Draw the combat background */
 
-				DrawPCs(f1, m1, screen);
-				DrawEnemy_C(b1, e1, g_combatState, screen);
+				DrawPCs(f1, m1, screen);									/** Draw the playable characters to the screen */
+				DrawEnemy_C(b1, e1, g_combatState, screen);					/** Draw Enemy Combatants */
 
-				if(keys[SDLK_g])
+				if(keys[SDLK_g])											/** conduct an attack */
 				{
 					e1->health = e1->health - f1->attack + e1->defense;
 				}
-				//Exit condition will need to remove sprite if enemy dies otherwise collision loops to keep screen up.
 			}
 			NextFrame();
 			SDL_PumpEvents();
 
-			if(b1->health <= 0 && g_combatState == 1)
+			if(b1->health <= 0 && g_combatState == 1)						/** If fighting a bishop and his HP goes below 0 End */
 			{
-				g_combatState = 0; //Temporary end condition for testing
-				SDL_FreeSurface(bg);
-				FreeBishop(b1);
+				g_combatState = 0;
+				f1->exp = f1->exp + b1->exp;								/**Add exp to both the fighter and the mage */
+				m1->exp = m1->exp + b1->exp;
+				if (f1->exp > f1->nextlvl)									/** Condition to check for a level up*/
+				{
+					f1->nextlvl = f1->nextlvl + (f1->nextlvl * .15);		/** if leveled up, increase stats */
+					f1->exp = 0;
+					f1->attack = f1->attack + 3;						
+					f1->defense = f1->defense +3;
+					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+
+				}
+
+				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
+				{
+					m1->nextlvl = m1->nextlvl + (m1->nextlvl * .15);		/** if leveled up, increase stats */
+					m1->exp = 0;
+					m1->attack = m1->attack + 1;
+					m1->defense = m1->defense +1;
+					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+
+				}
+				SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
+				FreeBishop(b1);												/** FIXTHIS -- removes from the map in other levels as well */
 			}
 
-			if(e1->health <= 0 && g_combatState == 2)
+			if(e1->health <= 0 && g_combatState == 2)						/** If fighting an ettin and his HP goes below 0 End */
 			{
-				g_combatState = 0; //Temporary end condition for testing
-				SDL_FreeSurface(bg);
-				FreeEttin(e1);
+				g_combatState = 0;
+				f1->exp = f1->exp + e1->exp;								/**Add exp to both the fighter and the mage */
+				m1->exp = m1->exp + e1->exp;
+				if (f1->exp > f1->nextlvl)									/** Condition to check for a level up*/
+				{
+					f1->nextlvl = f1->nextlvl + (f1->nextlvl * .25);        /** if leveled up, increase stats */
+					f1->exp = 0; 
+					f1->attack = f1->attack + 3;
+					f1->defense = f1->defense +3;
+					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+				}
+
+				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
+				{
+					m1->nextlvl = m1->nextlvl + (m1->nextlvl * .25);		/** if leveled up, increase stats */
+					m1->exp = 0;
+					m1->attack = m1->attack + 1;
+					m1->defense = m1->defense +1;
+					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+				}
+				SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
+				FreeEttin(e1);												/** FIXTHIS -- removes from the map in other levels as well */
 			}
 		}
 
@@ -174,15 +223,12 @@ int main(int argc, char *argv[])
 		DrawEnemy(b1,e1,screen,g_currentLevel,g_enemySpawned);
 		NextFrame();
 		SDL_PumpEvents();
-		// if(SDL_GetMouseState(&mx,&my))
-		// {
-		//DrawSprite(tile,buffer,(mx /32) * 32,(my /32) * 32,0); 
-		
-		//}
 		if(keys[SDLK_ESCAPE])done = 1;
-  }while(!done);
+  }while(!done);															/** End of the main game loop */
+
   FreeCharacter(c1);
   CloseSprites();
+  //TTF_Quit();
   exit(0);		/*technically this will end the program, but the compiler likes all functions that can return a value TO return a value*/
   return 0;
 }
@@ -199,4 +245,3 @@ void Init_All()
   InitMouse();
   atexit(CleanUpAll);
 }
-

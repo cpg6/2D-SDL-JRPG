@@ -7,7 +7,7 @@ extern int g_currentLevel;
 extern int g_enemySpawned;
 extern ScreenData  S_Data;
 
-void InitEttin(ettin *sprite)
+void InitEttin(ettin *sprite)												/** Init the Ettin */
 {
 	sprite->x = 256;
 	sprite->y = 269;
@@ -27,7 +27,7 @@ void InitEttin(ettin *sprite)
 	sprite->collision.y = 269;
 }
 
-void InitBishop(bishop *sprite)
+void InitBishop(bishop *sprite)												/** Init the Bishop */
 {
 	sprite->x = 768;
 	sprite->y = 538;
@@ -47,7 +47,7 @@ void InitBishop(bishop *sprite)
 	sprite->collision.y = 538;
 }
 
-void DrawEnemy(bishop *b1, ettin *e1, SDL_Surface* screen, int currentLevel, int enemySpawned)
+void DrawEnemy(bishop *b1, ettin *e1, SDL_Surface* screen, int currentLevel, int enemySpawned) /**Draw the Enemies to the overworld screen */
 {
 	if (b1->bsprite != NULL)
 	{
@@ -63,7 +63,7 @@ void DrawEnemy(bishop *b1, ettin *e1, SDL_Surface* screen, int currentLevel, int
 	}
 }
 
-void DrawEnemy_C(bishop* b1, ettin* e1, int combatLevel, SDL_Surface* screen)
+void DrawEnemy_C(bishop* b1, ettin* e1, int combatLevel, SDL_Surface* screen)					/** Draw the enemies to the combat screen */
 {
 	if (e1->esprite != NULL && combatLevel == 2)
 	{
@@ -76,8 +76,8 @@ void DrawEnemy_C(bishop* b1, ettin* e1, int combatLevel, SDL_Surface* screen)
 
 }
 
-void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
-{
+void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)							/** Enemy update function for the overworld too randomly move around */
+{																								/** Need to incorporate time delay between movements -- FIXTHIS -- */
 	int bishop, ettin;
 	int tilex, tiley;
 	int etilex, etiley;
@@ -86,10 +86,10 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 	bishop = (rand() % (max+1-min))+min;
 	ettin = (rand() % (max+1-min))+min;
 
-	/** Movement for Bishop with collision */
-	if(bishop == 0) //Move the bishop
+																								/** Movement for Bishop with collision */
+	if(bishop == 0) 
 	{
-		//Move left (bishop)
+																								/** Move left (bishop) */
 		bsprite->x = bsprite->x - 6;
 		if(bsprite->x < 0)
 			bsprite->x += 6;
@@ -100,7 +100,7 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 			bsprite->x=bsprite->x + 6;
 		}
 	}
-	else if (bishop == 1) //Move Down (bishop)
+	else if (bishop == 1)																		/** Move Down (bishop) */
 	{
 		bsprite->y = bsprite->y + 6;
 		tilex = bsprite->x/64;
@@ -111,7 +111,7 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 			bsprite->y -= 6;
 		}
 	}
-	else if (bishop == 2) //Move Right (bishop)
+	else if (bishop == 2)																		/** Move Right (bishop) */
 	{
 		bsprite->x = bsprite->x + 6;
 		if(bsprite->x+32 > S_Data.xres)
@@ -123,7 +123,7 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 			bsprite->x=bsprite->x - 6;
 		}
 	}
-	else if (bishop == 3) //Move Up (bishop)
+	else if (bishop == 3)																		/** Move Up (bishop) */
 	{
 		bsprite->y = bsprite->y - 6;
 		tilex = bsprite->x/64;
@@ -136,8 +136,8 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 		}
 	}
 
-	/** movement for ettin with collision */
-	if (ettin == 0) //Move left (ettin)
+																								/** movement for ettin with collision */
+	if (ettin == 0)																				/** Move left (ettin) */
 	{
 		esprite->x = esprite->x - 6;
 		if(esprite->x < 0)
@@ -149,7 +149,7 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 			esprite->x=esprite->x + 6;
 		}
 	}
-	else if (ettin == 1) //Move Down (ettin)
+	else if (ettin == 1)																		/** Move Down (ettin) */
 	{
 		esprite->y = esprite->y + 6;
 		etilex = esprite->x/64;
@@ -160,7 +160,7 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 			esprite->y -= 6;
 		}
 	}
-	else if (ettin == 2) //Move Right (ettin)
+	else if (ettin == 2)																		/** Move Right (ettin) */
 	{
 		esprite->x = esprite->x + 6;
 		if(esprite->x+32 > S_Data.xres)
@@ -172,7 +172,7 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 			esprite->x=esprite->x - 6;
 		}
 	}
-	else if (ettin == 3) //Move Up (ettin)
+	else if (ettin == 3)																		/** Move Up (ettin) */
 	{
 		esprite->y = esprite->y - 6;
 		etilex = esprite->x/64;
@@ -188,13 +188,13 @@ void EnemyThink(bishop *bsprite, ettin *esprite, SDL_Surface* screen)
 
 }
 
-void FreeBishop(bishop *b1)
+void FreeBishop(bishop *b1)																		/** Free the bishop from memory */
 {
 	FreeSprite(b1->bsprite);
 	memset(b1,0,sizeof(bishop));
 }
 
-void FreeEttin(ettin *e1)
+void FreeEttin(ettin *e1)																		/** Free the ettin from memory */
 {
 	FreeSprite(e1->esprite);
 	memset(e1,0,sizeof(ettin));

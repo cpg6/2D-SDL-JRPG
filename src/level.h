@@ -27,7 +27,7 @@ typedef struct Map_t
 
 void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, 
 	Sprite *bloodtile, Sprite *doortile, Map *map, Sprite *ettin, Sprite *bishop, int enemySpawned); /*used to draw the level and update the levels */
-void loadMap(Map *map, char *file);
+void loadMap(Map *map, char *file);																	/** Loads maps into memory */
 
 #endif
 
