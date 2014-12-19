@@ -23,6 +23,7 @@ typedef struct Fighter_T
 	int y;
 	Sprite *fsprite;
 	float exp;
+	int lvl;
 	float nextlvl;
 	int attack;
 	int defense;
@@ -34,6 +35,7 @@ typedef struct Mage_T
 	int y;
 	Sprite *msprite;
 	float exp;
+	int lvl;
 	float nextlvl;
 	int attack;
 	int defense;

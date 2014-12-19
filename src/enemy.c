@@ -11,7 +11,7 @@ void InitEttin(ettin *sprite)												/** Init the Ettin */
 {
 	sprite->x = 256;
 	sprite->y = 269;
-	sprite->cx = 300;
+	sprite->cx = 100;
 	sprite->cy = 300;
 	sprite->esprite = LoadSprite("images/ettin.png",36, 48);
 	sprite->esprite_c = LoadSprite("images/ettin2.png",256,192);
@@ -31,7 +31,7 @@ void InitBishop(bishop *sprite)												/** Init the Bishop */
 {
 	sprite->x = 768;
 	sprite->y = 538;
-	sprite->cx = 300;
+	sprite->cx = 100;
 	sprite->cy = 300;
 	sprite->bsprite = LoadSprite("images/bishop.png",36, 48);
 	sprite->bsprite_c = LoadSprite("images/bishop2.png",256,192);

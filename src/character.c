@@ -26,23 +26,25 @@ void InitCharacter(character *sprite)
 void InitFighter(fighter *sprite)
 {
 	sprite->x = 800;
-	sprite->y = 300;
-	sprite->fsprite = LoadSprite("images/fighter.png",36,48);
+	sprite->y = 350;
+	sprite->fsprite = LoadSprite("images/fighter.png",48,60);
 	sprite->exp = 0;
 	sprite->attack = 40;
 	sprite->defense = 10;
 	sprite->nextlvl = 50;
+	sprite->lvl = 1;
 
 }
 void InitMage(mage *sprite)
 {
 	sprite->x = 800;
-	sprite->y = 600;
-	sprite->msprite = LoadSprite("images/mage.png",36,48);
+	sprite->y = 475;
+	sprite->msprite = LoadSprite("images/mage.png",48,60);
 	sprite->exp = 0;
 	sprite->attack = 60;
 	sprite->defense = 2;
 	sprite->nextlvl = 50;
+	sprite->lvl = 1;
 
 }
 
