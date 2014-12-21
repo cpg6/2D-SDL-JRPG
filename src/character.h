@@ -22,6 +22,9 @@ typedef struct Fighter_T
 	int x;
 	int y;
 	Sprite *fsprite;
+	int hp;
+	int maxhp;
+	Uint32 time;
 	float exp;
 	int lvl;
 	float nextlvl;
@@ -34,6 +37,9 @@ typedef struct Mage_T
 	int x;
 	int y;
 	Sprite *msprite;
+	int hp;
+	int maxhp;
+	Uint32 time;
 	float exp;
 	int lvl;
 	float nextlvl;
