@@ -17,7 +17,7 @@ void InitEttin(ettin *sprite)												/** Init the Ettin */
 	sprite->esprite_c = LoadSprite("images/ettin2.png",256,192);
 	sprite->exp = 30;
 	sprite->health = 80;
-	sprite->attack = 15;
+	sprite->attack = 6;
 	sprite->defense = 3;
 	sprite->used = 1;
 	sprite->flag = 0;
@@ -38,7 +38,7 @@ void InitBishop(bishop *sprite)												/** Init the Bishop */
 	sprite->bsprite_c = LoadSprite("images/bishop2.png",256,192);
 	sprite->exp = 75;
 	sprite->health = 45;
-	sprite->attack = 25;
+	sprite->attack = 15;
 	sprite->defense = 0;
 	sprite->used = 1;
 	sprite->flag = 0;
@@ -59,7 +59,7 @@ void InitCentaur(centaur *sprite)												/** Init the Centaur */
 	sprite->csprite_c = LoadSprite("images/centaur2.png",256,192);
 	sprite->exp = 100;
 	sprite->health = 150;
-	sprite->attack = 15;
+	sprite->attack = 12;
 	sprite->defense = 30;
 	sprite->used = 1;
 	sprite->flag = 0;
@@ -80,7 +80,7 @@ void InitSerpent(serpent *sprite)												/** Init the Serpent */
 	sprite->ssprite_c = LoadSprite("images/serpent2.png",256,192);
 	sprite->exp = 80;
 	sprite->health = 105;
-	sprite->attack = 12;
+	sprite->attack = 8;
 	sprite->defense = 0;
 	sprite->used = 1;
 	sprite->flag = 0;
@@ -404,6 +404,13 @@ void EnemyThink(bishop *bsprite, ettin *esprite, centaur *csprite,
 			
 	}
 		
+}
+
+void EnemyThink_C(bishop* b1, ettin* e1, centaur* cen1, serpent* s1, korax* k1,
+	int combatState)																			/** Enemy think function for combat */
+{
+
+
 }
 
 

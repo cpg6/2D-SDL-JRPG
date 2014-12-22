@@ -114,6 +114,9 @@ void DrawEnemy_C(bishop* b1, ettin* e1, centaur* cen1, serpent* s1, korax* k1,
 void EnemyThink(bishop* b1, ettin* e1, centaur* cen1, serpent* s1, korax* k1, 
 	SDL_Surface* screen, int currentLevel);														/** Enemy update function for roaming enemies */
 
+void EnemyThink_C(bishop* b1, ettin* e1, centaur* cen1, serpent* s1, korax* k1,
+	int combatState);																			/** Enemy update Function for combat */
+
 void FreeBishop(bishop *b1);																	/** Free the ettin from memory */
 void FreeEttin(ettin *e1);																		/** Free the Bisop from memory */
 void FreeCentaur(centaur *cen1);

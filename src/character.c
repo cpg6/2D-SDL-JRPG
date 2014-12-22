@@ -157,3 +157,15 @@ void FreeCharacter(character* c1)
 	FreeSprite(c1->csprite);
 	memset(c1,0,sizeof(character));
 }
+
+void FreeFighter(fighter* f1)
+{
+	FreeSprite(f1->fsprite);
+	memset(f1,0,sizeof(fighter));
+}
+
+void FreeMage(mage* m1)
+{
+	FreeSprite(m1->msprite);
+	memset(m1,0,sizeof(mage));
+}

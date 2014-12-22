@@ -31,12 +31,12 @@ int main(int argc, char *argv[])
 	SDL_Surface *temp, *temp2;
 	SDL_Surface *bg;
 	SDL_Surface *fontSurface1, *fontSurface2, *fontSurface3, *fontSurface4, *fontSurface5, *fontSurface6, *fontSurface7, *fontSurface8, *fontdamage,
-		*fontSurface9, *fontSurface10, *fontSurface11, *fontSurface12, *fontSurface13, *fontSurface14;
+		*fontSurface9, *fontSurface10, *fontSurface11, *fontSurface12, *fontSurface13, *fontSurface14, *efontdamage;
 	SDL_Surface *menuScreen;
 	
 
-	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile, *combat_bg; 
-	Sprite *fightericon, *mageicon, *selector;
+	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile;  /** world tile sprites */ 
+	Sprite *fightericon, *mageicon, *selector;										/** combat sprites */
 	character* c1;
 	ettin* e1;
 	bishop* b1;
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	"levels/map3.txt"
 	};
 	
-	char fighterAttack[12];
+	char fighterAttack[12];							/** character arrays for RPG Statistics */
 	char fighterDefense[12];
 	char fighterExp[18];
 	char mageAttack[12];
@@ -68,14 +68,14 @@ int main(int argc, char *argv[])
 	char magemaxhp[20];
 	char fightermaxhp[20];
 
-	int collision1, collision2, collision3, collision4, collision5, mx, my, damage;
-	int done, keyn,x , tempExp, tempExp2, fighterFlag, mageFlag;
+	int collision1, collision2, collision3, collision4, collision5, mx, my, damage, eDamage;		/** collision checks and damage output */
+	int done, keyn, x, eThink;
 	Uint8 *keys;
 	Init_All();
 	TTF_Init();
 				
-	Uint32 fOldTime = 0, fCurrentTime = 0, mOldTime = 0, mCurrentTime = 0;
-	float fTime, mTime;
+	Uint32 fOldTime = 0, fCurrentTime = 0, mOldTime = 0, mCurrentTime = 0, eOldTime, eCurrentTime;
+	float fTime, mTime, eTime;												/** Timer controls for player and enemy turns */
 
 	g_currentLevel = 0;														/** Set current level to first as default */
 	g_enemySpawned = 0;														/** Wound up not needing this -- FIXTHIS -- */
@@ -91,7 +91,6 @@ int main(int argc, char *argv[])
 	bloodtile = LoadSprite("images/blood.png",64,48);
 	doortile = LoadSprite("images/door.png",64,48);
 
-	combat_bg = LoadSprite("images/battle.png",1024,768);
 	fightericon = LoadSprite("images/fighter_icon.png",192,272);
 	mageicon = LoadSprite("images/mage_icon.png",192,272);
 	selector = LoadSprite("images/selector.png",60,72);
@@ -139,9 +138,12 @@ int main(int argc, char *argv[])
 	SDL_Rect textLoc8 = {100, 550, 0, 0};
 
 	
-	bg = SDL_DisplayFormat(temp);
-	
 	SDL_Rect dmgLoc1  = {208, 497, 0, 0};
+	SDL_Rect dmgLoc2 = {805,410,0,0};
+	SDL_Rect dmgLoc3 = {805,535,0,0};
+
+	char numDamage[10];
+	char eNumDamage[10];
 
 	for(x=0;x<MAX_MAPS; x++)												/** Load the maps from text files into memory */
 		loadMap(&maps[x],map_files[x]);
@@ -161,6 +163,19 @@ int main(int argc, char *argv[])
 
 			ResetBuffer();
 
+			sprintf_s(fighterAttack,"Attack: %i", f1->attack);
+			sprintf_s(fighterDefense,"Defense: %i", f1->defense);
+			sprintf_s(fighterExp, "Experience: %4.2f", f1->exp);
+			sprintf_s(mageAttack, "Attack: %i", m1->attack);
+			sprintf_s(mageDefense, "Defense: %i", m1->defense);
+			sprintf_s(mageExp, "Experience: %4.2f", m1->exp);
+			sprintf_s(fighterLvl, "Current Level: %i", f1->lvl);
+			sprintf_s(mageLvl, "Current Level: %i", m1->lvl);
+			sprintf_s(fighterhp,"HP: %i",f1->hp);
+			sprintf_s(magehp,"HP: %i",m1->hp);
+			sprintf_s(magemaxhp,"MaxHP: %i", m1->maxhp);
+			sprintf_s(fightermaxhp,"MaxHP: %i", f1->maxhp);
+
 			fontSurface1 = TTF_RenderText_Solid(font,"Fighter",textColor);
 			fontSurface9 = TTF_RenderText_Solid(font,fighterLvl, textColor);
 			fontSurface11= TTF_RenderText_Solid(font,fighterhp,textColor);
@@ -175,31 +190,17 @@ int main(int argc, char *argv[])
 			fontSurface6 = TTF_RenderText_Solid(font,mageAttack,textColor);
 			fontSurface7 = TTF_RenderText_Solid(font,mageDefense,textColor);
 			fontSurface8 = TTF_RenderText_Solid(font,mageExp,textColor);
-
-
-			sprintf(fighterAttack,"Attack: %i", f1->attack);
-			sprintf(fighterDefense,"Defense: %i", f1->defense);
-			sprintf(fighterExp, "Experience: %4.2f", f1->exp);
-			sprintf(mageAttack, "Attack: %i", m1->attack);
-			sprintf(mageDefense, "Defense: %i", m1->defense);
-			sprintf(mageExp, "Experience: %4.2f", m1->exp);
-			sprintf(fighterLvl, "Current Level: %i", f1->lvl);
-			sprintf(mageLvl, "Current Level: %i", m1->lvl);
-			sprintf(fighterhp,"HP: %i",f1->hp);
-			sprintf(magehp,"HP: %i",m1->hp);
-			sprintf(magemaxhp,"MaxHP: %i", m1->maxhp);
-			sprintf(fightermaxhp,"MaxHP: %i", f1->maxhp);
 	
 
 			if(temp2 != NULL)						
 				menuScreen = SDL_DisplayFormat(temp2);
 			else
-				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
+				fprintf(stderr,"Error1: %s\n",SDL_GetError());
 
 			if(menuScreen != NULL)
 				SDL_BlitSurface(menuScreen,NULL,buffer,NULL);
 			else
-				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
+				fprintf(stderr,"Error2: %s\n",SDL_GetError());
 			
 			SDL_BlitSurface(fontSurface1, NULL, buffer, &textLoc1);
 			SDL_BlitSurface(fontSurface9, NULL, buffer, &textLoc9);
@@ -216,10 +217,23 @@ int main(int argc, char *argv[])
 			SDL_BlitSurface(fontSurface7, NULL, buffer, &textLoc7);
 			SDL_BlitSurface(fontSurface8, NULL, buffer, &textLoc8);
 
+			SDL_FreeSurface(fontSurface1);
+			SDL_FreeSurface(fontSurface2);
+			SDL_FreeSurface(fontSurface3);
+			SDL_FreeSurface(fontSurface4);
+			SDL_FreeSurface(fontSurface5);
+			SDL_FreeSurface(fontSurface6);
+			SDL_FreeSurface(fontSurface7);
+			SDL_FreeSurface(fontSurface8);
+			SDL_FreeSurface(fontSurface9);
+			SDL_FreeSurface(fontSurface10);
+			SDL_FreeSurface(fontSurface11);
+			SDL_FreeSurface(fontSurface12);
+			SDL_FreeSurface(fontSurface13);
+			SDL_FreeSurface(fontSurface14);
+
 			DrawSprite(fightericon,buffer,512,100,0);
 			DrawSprite(mageicon,buffer,512,384,0);
-			SDL_Flip(buffer);
-			//SDL_Flip(screen);
 			ResetBuffer();
 
 		}
@@ -241,6 +255,7 @@ int main(int argc, char *argv[])
 			InitBlockButton(bb1);
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
+			eOldTime = SDL_GetTicks();
 		}
 		if (collision2 == 1 && g_currentLevel == 0)
 		{
@@ -250,6 +265,7 @@ int main(int argc, char *argv[])
 			InitBlockButton(bb1);
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
+			eOldTime = SDL_GetTicks();
 		}
 		if (collision3 == 1 && g_currentLevel == 1)
 		{
@@ -259,6 +275,7 @@ int main(int argc, char *argv[])
 			InitBlockButton(bb1);
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
+			eOldTime = SDL_GetTicks();
 		}
 		if (collision4 == 1 && g_currentLevel == 1)
 		{
@@ -267,7 +284,8 @@ int main(int argc, char *argv[])
 			InitAttackButton(ab1);
 			InitBlockButton(bb1);
 			mOldTime = SDL_GetTicks();
-			fOldTime = SDL_GetTicks();	
+			fOldTime = SDL_GetTicks();
+			eOldTime = SDL_GetTicks();
 		}
 		if (collision5 == 1 && g_currentLevel == 2)
 		{
@@ -277,6 +295,7 @@ int main(int argc, char *argv[])
 			InitBlockButton(bb1);
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
+			eOldTime = SDL_GetTicks();
 		}
 		
 		ResetBuffer ();
@@ -297,17 +316,19 @@ int main(int argc, char *argv[])
 			mCurrentTime = SDL_GetTicks();
 			mTime = ((mCurrentTime - mOldTime) / 1000.0);				/** Start Mage Timer */
 
+			eCurrentTime = SDL_GetTicks();
+			eTime = ((eCurrentTime - eOldTime) / 1000.0);				/** Start Enemy Timer */
+
 			if(temp != NULL)						
 				bg = SDL_DisplayFormat(temp);
 			else
-				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
+				fprintf(stderr,"Error1: %s\n",SDL_GetError());
 
 			if(bg != NULL)
 				SDL_BlitSurface(bg,NULL,buffer,NULL);					/** Draw the combat background */
 			else
-				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
-
-			SDL_Flip(buffer);											/** Update the buffer drawn too */
+				fprintf(stderr,"Error2: %s\n",SDL_GetError());
+			SDL_FreeSurface(bg);										/** Update the buffer drawn too */
 			DrawPCs(f1, m1, screen);									/** Draw the playable characters to the screen */
 			DrawEnemy_C(b1, e1, cen1, s1, k1,g_combatState, screen);	/** Draw Enemy Combatants */
 			DrawButton_C(ab1,bb1,screen);								/** Draw GUI buttons to screen */
@@ -347,15 +368,15 @@ int main(int argc, char *argv[])
 						k1->health = (k1->health + k1->defense) - f1->attack;
 						damage = f1->attack - k1->defense;
 					}
-					char numDamage[10];
-					sprintf(numDamage,"%i",damage);
+					sprintf_s(numDamage,"%i",damage);
 					fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
 					SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
+					SDL_FreeSurface(fontdamage);
 					SDL_Flip(screen);
 					printf("COLLISION DETECTED!!!!!!! \n");
 					fCurrentTime = 0, fTime = 0;
 					fOldTime = SDL_GetTicks();
-					SDL_FreeSurface(fontdamage);
+					
 				}
 				/* ===Not done yet===
 				else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
@@ -398,15 +419,15 @@ int main(int argc, char *argv[])
 						k1->health = (k1->health + k1->defense) - m1->attack;
 						damage = m1->attack - k1->defense;
 					}
-					char numDamage[10];
-					sprintf(numDamage,"%i",damage);
+					sprintf_s(numDamage,"%i",damage);
 					fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
 					SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
+					SDL_FreeSurface(fontdamage);
 					SDL_Flip(screen);
 					printf("COLLISION DETECTED!!!!!!! \n");
 					mCurrentTime = 0, mTime = 0;
 					mOldTime = SDL_GetTicks();
-					SDL_FreeSurface(fontdamage);
+					
 				}
 				/* ===Not done yet===
 				else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
@@ -416,6 +437,156 @@ int main(int argc, char *argv[])
 					printf("COLLISION DETECTED!!!!!!! \n");
 				}
 				*/
+			}
+
+			if(eTime > 4.0)
+			{
+				eThink = rand() % 2 + 1;
+				if(g_combatState == 1)			//Bishop Attack
+					{
+						if(eThink == 1)			//Attack Fighter
+						{
+							f1->hp = (f1->hp + f1->defense) - b1->attack;
+							eDamage = b1->attack - f1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+							
+						}
+						else if(eThink == 2)	//Attack Mage
+						{
+							m1->hp = (m1->hp + m1->defense) - b1->attack;
+							eDamage = b1->attack - m1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+					}
+				else if(g_combatState == 2)		//Ettin Attack
+					{
+						if(eThink == 1)			//Attack Fighter
+						{
+							f1->hp = (f1->hp + f1->defense) - e1->attack;
+							eDamage = e1->attack - f1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+						else if(eThink == 2)	//Attack Mage
+						{
+							m1->hp = (m1->hp + m1->defense) - e1->attack;
+							eDamage = e1->attack - m1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+					}
+				else if(g_combatState == 3)		//Centaur Attack
+					{
+						if(eThink == 1)			//Attack Fighter
+						{
+							f1->hp = (f1->hp + f1->defense) - cen1->attack;
+							eDamage = cen1->attack - f1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+						else if(eThink == 2)	//Attack Mage
+						{
+							m1->hp = (m1->hp + m1->defense) - cen1->attack;
+							eDamage = cen1->attack - m1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+					}
+				else if(g_combatState == 4)		//Serpent Attack
+					{
+						if(eThink == 1)			//Attack Fighter
+						{
+							f1->hp = (f1->hp + f1->defense) - s1->attack;
+							eDamage = s1->attack - f1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+						else if(eThink == 2)	//Attack Mage
+						{
+							m1->hp = (m1->hp + m1->defense) - s1->attack;
+							eDamage = s1->attack - m1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+					}
+				else if(g_combatState == 5)		//KORAX Attack
+					{
+						if(eThink == 1)			//Attack Fighter
+						{
+							f1->hp = (f1->hp + f1->defense) - k1->attack;
+							eDamage = k1->attack - f1->defense;sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+						else if(eThink == 2)	//Attack Mage
+						{
+							m1->hp = (m1->hp + m1->defense) - k1->attack;
+							eDamage = k1->attack - m1->defense;
+							sprintf_s(eNumDamage,"%i",eDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
+							SDL_FreeSurface(efontdamage);
+							SDL_Flip(screen);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0;
+						}
+					}
 			}
 
 			NextFrame();
@@ -439,7 +610,7 @@ int main(int argc, char *argv[])
 					f1->lvl = f1->lvl + 1;
 					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
 					f1->hp = f1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 
 				}
 
@@ -452,12 +623,10 @@ int main(int argc, char *argv[])
 					m1->lvl = m1->lvl + 1;
 					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
 					m1->hp = m1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 
 				}
-				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
 				FreeBishop(b1);												/** FIXTHIS -- removes from the map in other levels as well */
-				ResetBuffer();
 				g_combatState = 0;
 			}
 
@@ -474,7 +643,7 @@ int main(int argc, char *argv[])
 					f1->lvl = f1->lvl + 1;
 					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
 					f1->hp = f1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
 
 				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
@@ -486,11 +655,9 @@ int main(int argc, char *argv[])
 					m1->lvl = m1->lvl + 1;
 					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
 					m1->hp = m1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
-				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
 				FreeEttin(e1);												/** FIXTHIS -- removes from the map in other levels as well */
-				ResetBuffer();
 				g_combatState = 0;
 			}
 
@@ -508,7 +675,7 @@ int main(int argc, char *argv[])
 					f1->lvl = f1->lvl + 1;
 					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
 					f1->hp = f1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
 
 				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
@@ -520,11 +687,9 @@ int main(int argc, char *argv[])
 					m1->lvl = m1->lvl + 1;
 					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
 					m1->hp = m1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
-				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
 				FreeCentaur(cen1);												/** FIXTHIS -- removes from the map in other levels as well */
-				ResetBuffer();
 				g_combatState = 0;
 			}
 
@@ -541,7 +706,7 @@ int main(int argc, char *argv[])
 					f1->lvl = f1->lvl + 1;
 					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
 					f1->hp = f1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
 
 				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
@@ -553,11 +718,9 @@ int main(int argc, char *argv[])
 					m1->lvl = m1->lvl + 1;
 					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
 					m1->hp = m1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
-				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
 				FreeSerpent(s1);												/** FIXTHIS -- removes from the map in other levels as well */
-				ResetBuffer();
 				g_combatState = 0;
 			}
 
@@ -575,7 +738,7 @@ int main(int argc, char *argv[])
 					f1->lvl = f1->lvl + 1;
 					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
 					f1->hp = f1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
 
 				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
@@ -587,11 +750,9 @@ int main(int argc, char *argv[])
 					m1->lvl = m1->lvl + 1;
 					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
 					m1->hp = m1->maxhp;
-					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+					//SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
-				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
 				FreeKorax(k1);												/** FIXTHIS -- removes from the map in other levels as well */
-				ResetBuffer();
 				g_combatState = 0;
 			}
 		}
@@ -628,6 +789,12 @@ int main(int argc, char *argv[])
 
   FreeCharacter(c1);
   CloseSprites();
+  /*			
+  FreeEttin(e1);					Not needed since freed throughout the program
+  FreeBishop(b1);
+  FreeCentaur(cen1);
+  FreeSerpent(s1);
+  FreeKorax(k1);
   SDL_FreeSurface(fontSurface1);
   SDL_FreeSurface(fontSurface2);
   SDL_FreeSurface(fontSurface3);
@@ -642,6 +809,7 @@ int main(int argc, char *argv[])
   SDL_FreeSurface(fontSurface12);
   SDL_FreeSurface(fontSurface13);
   SDL_FreeSurface(fontSurface14);
+  */
   TTF_Quit();
   exit(0);		/*technically this will end the program, but the compiler likes all functions that can return a value TO return a value*/
   return 0;

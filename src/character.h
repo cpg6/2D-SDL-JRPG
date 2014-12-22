@@ -55,5 +55,7 @@ void DrawPCs(fighter* f1, mage* m1, SDL_Surface* screen2);								/** Draws play
 void DrawCharacter(character* c1, SDL_Surface* screen, int currentLevel);				/** Draw function for character in overworld */
 void CharacterMove(character *sprite, Uint8* keys);										/** Character move function for overworld */
 void FreeCharacter(character* c1);														/** Free the character from memory */
+void FreeFighter(fighter* f1);
+void FreeMage(mage* m1);
 
 #endif
