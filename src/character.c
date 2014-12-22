@@ -156,12 +156,4 @@ void FreeCharacter(character* c1)
 {
 	FreeSprite(c1->csprite);
 	memset(c1,0,sizeof(character));
-	/*
-	c1->x = NULL;
-	c1->y = NULL;
-	c1->exp = NULL;
-	c1->health = NULL;
-	c1->flag = NULL;
-	c1->csprite = NULL;
-	*/
 }

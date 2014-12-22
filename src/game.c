@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	SDL_Surface *menuScreen;
 	
 
-	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile, *enemy_ettin, *enemy_bishop, *combat_bg; 
+	Sprite *bordertile, *grasstile, *castletile, *walltile, *bloodtile, *doortile, *combat_bg; 
 	Sprite *fightericon, *mageicon, *selector;
 	character* c1;
 	ettin* e1;
@@ -44,6 +44,9 @@ int main(int argc, char *argv[])
 	mage* m1;
 	attackButton* ab1;
 	blockButton* bb1;
+	centaur* cen1;
+	serpent* s1;
+	korax* k1;
 
 	char *map_files[MAX_MAPS] = 
 	{	
@@ -52,13 +55,27 @@ int main(int argc, char *argv[])
 	"levels/map3.txt"
 	};
 	
+	char fighterAttack[12];
+	char fighterDefense[12];
+	char fighterExp[18];
+	char mageAttack[12];
+	char mageDefense[12];
+	char mageExp[18];
+	char fighterLvl[20];
+	char mageLvl[20];
+	char fighterhp[20];
+	char magehp[20];
+	char magemaxhp[20];
+	char fightermaxhp[20];
 
-	int collision1, collision2, mx, my, damage;
-	int done, keyn,x , tempExp, tempExp2, fighterFlag, mageFlag, fighterTurn, mageTurn;
+	int collision1, collision2, collision3, collision4, collision5, mx, my, damage;
+	int done, keyn,x , tempExp, tempExp2, fighterFlag, mageFlag;
 	Uint8 *keys;
 	Init_All();
 	TTF_Init();
-																		
+				
+	Uint32 fOldTime = 0, fCurrentTime = 0, mOldTime = 0, mCurrentTime = 0;
+	float fTime, mTime;
 
 	g_currentLevel = 0;														/** Set current level to first as default */
 	g_enemySpawned = 0;														/** Wound up not needing this -- FIXTHIS -- */
@@ -73,30 +90,31 @@ int main(int argc, char *argv[])
 	walltile = LoadSprite("images/wall.png",64,48);
 	bloodtile = LoadSprite("images/blood.png",64,48);
 	doortile = LoadSprite("images/door.png",64,48);
-	enemy_ettin = LoadSprite("images/ettin.png",36, 48);
-	enemy_bishop = LoadSprite("images/bishop.png",36, 48);
+
 	combat_bg = LoadSprite("images/battle.png",1024,768);
 	fightericon = LoadSprite("images/fighter_icon.png",192,272);
 	mageicon = LoadSprite("images/mage_icon.png",192,272);
 	selector = LoadSprite("images/selector.png",60,72);
 
     c1 = (character*) malloc(sizeof(character));							/**allocate memory for all objects/entities and init them! */
-	e1 = (ettin*) malloc(sizeof(ettin));
-	b1 = (bishop*) malloc(sizeof(bishop));
 	f1 = (fighter*) malloc(sizeof(fighter));
 	m1 = (mage*) malloc(sizeof(mage));
 	ab1 = (attackButton*) malloc(sizeof(attackButton));
 	bb1 = (blockButton*) malloc(sizeof(blockButton));
+	e1 = (ettin*) malloc(sizeof(ettin));
+	b1 = (bishop*) malloc(sizeof(bishop));
+	cen1=(centaur*) malloc(sizeof(centaur));
+	s1 = (serpent*) malloc(sizeof(serpent));
+	k1 = (korax*) malloc(sizeof(korax));
 
-	
-    InitCharacter(c1);
 	InitEttin(e1);
 	InitBishop(b1);
+	InitCentaur(cen1);
+	InitSerpent(s1);
+	InitKorax(k1);
+	InitCharacter(c1);
 	InitFighter(f1);
 	InitMage(m1);
-
-
-
 	
 	TTF_Font* font = TTF_OpenFont("fonts/font1.ttf",24);
 	TTF_Font* dmgfont = TTF_OpenFont("fonts/font.ttf",48);
@@ -119,9 +137,9 @@ int main(int argc, char *argv[])
 	SDL_Rect textLoc6 = {100, 500, 0, 0};
 	SDL_Rect textLoc7 = {100, 525, 0, 0};
 	SDL_Rect textLoc8 = {100, 550, 0, 0};
+
 	
-	
-	
+	bg = SDL_DisplayFormat(temp);
 	
 	SDL_Rect dmgLoc1  = {208, 497, 0, 0};
 
@@ -132,60 +150,57 @@ int main(int argc, char *argv[])
     do
     {
 		keys = SDL_GetKeyState(&keyn);
+
 		//==================================================================================
 		// Menu Screen Begin
 		//==================================================================================
 
-		char fighterAttack[12];
-		sprintf(fighterAttack,"Attack: %i", f1->attack);
-		char fighterDefense[12];
-		sprintf(fighterDefense,"Defense: %i", f1->defense);
-		char fighterExp[18];
-		sprintf(fighterExp, "Experience: %4.2f", f1->exp);
-		char mageAttack[12];
-		sprintf(mageAttack, "Attack: %i", m1->attack);
-		char mageDefense[12];
-		sprintf(mageDefense, "Defense: %i", m1->defense);
-		char mageExp[18];
-		sprintf(mageExp, "Experience: %4.2f", m1->exp);
-		char fighterLvl[20];
-		sprintf(fighterLvl, "Current Level: %i", f1->lvl);
-		char mageLvl[20];
-		sprintf(mageLvl, "Current Level: %i", m1->lvl);
-		char fighterhp[20];
-		sprintf(fighterhp,"HP: %i",f1->hp);
-		char magehp[20];
-		sprintf(magehp,"HP: %i",m1->hp);
-		char magemaxhp[20];
-		sprintf(magemaxhp,"MaxHP: %i", m1->maxhp);
-		char fightermaxhp[20];
-		sprintf(fightermaxhp,"MaxHP: %i", f1->maxhp);
-
-
-		fontSurface1 = TTF_RenderText_Solid(font,"Fighter",textColor);
-		fontSurface9 = TTF_RenderText_Solid(font,fighterLvl, textColor);
-		fontSurface11= TTF_RenderText_Solid(font,fighterhp,textColor);
-		fontSurface13= TTF_RenderText_Solid(font,fightermaxhp,textColor);
-		fontSurface2 = TTF_RenderText_Solid(font,fighterAttack,textColor);
-		fontSurface3 = TTF_RenderText_Solid(font,fighterDefense,textColor);
-		fontSurface4 = TTF_RenderText_Solid(font,fighterExp,textColor);
-		fontSurface5 = TTF_RenderText_Solid(font,"Mage",textColor);
-		fontSurface10= TTF_RenderText_Solid(font,mageLvl,textColor);
-		fontSurface12= TTF_RenderText_Solid(font,magehp,textColor);
-		fontSurface14= TTF_RenderText_Solid(font,magemaxhp,textColor);
-		fontSurface6 = TTF_RenderText_Solid(font,mageAttack,textColor);
-		fontSurface7 = TTF_RenderText_Solid(font,mageDefense,textColor);
-		fontSurface8 = TTF_RenderText_Solid(font,mageExp,textColor);
 		
 		if(keys[SDLK_k])													/** text test */
 		{
 
+			ResetBuffer();
+
+			fontSurface1 = TTF_RenderText_Solid(font,"Fighter",textColor);
+			fontSurface9 = TTF_RenderText_Solid(font,fighterLvl, textColor);
+			fontSurface11= TTF_RenderText_Solid(font,fighterhp,textColor);
+			fontSurface13= TTF_RenderText_Solid(font,fightermaxhp,textColor);
+			fontSurface2 = TTF_RenderText_Solid(font,fighterAttack,textColor);
+			fontSurface3 = TTF_RenderText_Solid(font,fighterDefense,textColor);
+			fontSurface4 = TTF_RenderText_Solid(font,fighterExp,textColor);
+			fontSurface5 = TTF_RenderText_Solid(font,"Mage",textColor);
+			fontSurface10= TTF_RenderText_Solid(font,mageLvl,textColor);
+			fontSurface12= TTF_RenderText_Solid(font,magehp,textColor);
+			fontSurface14= TTF_RenderText_Solid(font,magemaxhp,textColor);
+			fontSurface6 = TTF_RenderText_Solid(font,mageAttack,textColor);
+			fontSurface7 = TTF_RenderText_Solid(font,mageDefense,textColor);
+			fontSurface8 = TTF_RenderText_Solid(font,mageExp,textColor);
+
+
+			sprintf(fighterAttack,"Attack: %i", f1->attack);
+			sprintf(fighterDefense,"Defense: %i", f1->defense);
+			sprintf(fighterExp, "Experience: %4.2f", f1->exp);
+			sprintf(mageAttack, "Attack: %i", m1->attack);
+			sprintf(mageDefense, "Defense: %i", m1->defense);
+			sprintf(mageExp, "Experience: %4.2f", m1->exp);
+			sprintf(fighterLvl, "Current Level: %i", f1->lvl);
+			sprintf(mageLvl, "Current Level: %i", m1->lvl);
+			sprintf(fighterhp,"HP: %i",f1->hp);
+			sprintf(magehp,"HP: %i",m1->hp);
+			sprintf(magemaxhp,"MaxHP: %i", m1->maxhp);
+			sprintf(fightermaxhp,"MaxHP: %i", f1->maxhp);
+	
+
 			if(temp2 != NULL)						
 				menuScreen = SDL_DisplayFormat(temp2);
+			else
+				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
 
 			if(menuScreen != NULL)
 				SDL_BlitSurface(menuScreen,NULL,buffer,NULL);
-
+			else
+				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
+			
 			SDL_BlitSurface(fontSurface1, NULL, buffer, &textLoc1);
 			SDL_BlitSurface(fontSurface9, NULL, buffer, &textLoc9);
 			SDL_BlitSurface(fontSurface11, NULL, buffer, &textLoc11);
@@ -203,34 +218,68 @@ int main(int argc, char *argv[])
 
 			DrawSprite(fightericon,buffer,512,100,0);
 			DrawSprite(mageicon,buffer,512,384,0);
-			SDL_Flip(screen);
+			SDL_Flip(buffer);
+			//SDL_Flip(screen);
+			ResetBuffer();
 
 		}
 
 		//==================================================================================
-		// Menu Screen End
+		// Collision Checks on Overworld
 		//==================================================================================
 
 		collision1 = checkCollision(c1->collision,b1->collision);			/** Continuously check if there is a collision detected */
 		collision2 = checkCollision(c1->collision,e1->collision);			/** Continuously check if there is a collision detected */
-		if (collision1 == 1)
+		collision3 = checkCollision(c1->collision,cen1->collision);
+		collision4 = checkCollision(c1->collision,s1->collision);
+		collision5 = checkCollision(c1->collision,k1->collision);
+		if (collision1 == 1 && g_currentLevel == 0)
 		{
 			printf("COLLISION DETECTED!!!!!!! BISHOP \n");					/** if collided w/ bishop set combat state and Init */
 			g_combatState = 1;
 			InitAttackButton(ab1);
 			InitBlockButton(bb1);
+			mOldTime = SDL_GetTicks();
+			fOldTime = SDL_GetTicks();
 		}
-		if (collision2 == 1)
+		if (collision2 == 1 && g_currentLevel == 0)
 		{
 			printf("COLLISION DETECTED!!!!!!! ETTIN \n");					/** if collided w/ ettin set combat state and Init */
 			g_combatState = 2;
 			InitAttackButton(ab1);
 			InitBlockButton(bb1);
+			mOldTime = SDL_GetTicks();
+			fOldTime = SDL_GetTicks();
+		}
+		if (collision3 == 1 && g_currentLevel == 1)
+		{
+			printf("COLLISION DETECTED!!!!!!! Centaur \n");					/** if collided w/ centaur set combat state and Init */
+			g_combatState = 3;
+			InitAttackButton(ab1);
+			InitBlockButton(bb1);
+			mOldTime = SDL_GetTicks();
+			fOldTime = SDL_GetTicks();
+		}
+		if (collision4 == 1 && g_currentLevel == 1)
+		{
+			printf("COLLISION DETECTED!!!!!!! Serpent \n");					/** if collided w/ serpent set combat state and Init */
+			g_combatState = 4;
+			InitAttackButton(ab1);
+			InitBlockButton(bb1);
+			mOldTime = SDL_GetTicks();
+			fOldTime = SDL_GetTicks();	
+		}
+		if (collision5 == 1 && g_currentLevel == 2)
+		{
+			printf("COLLISION DETECTED!!!!!!! KORAX \n");					/** if collided w/ KORAX set combat state and Init */
+			g_combatState = 5;
+			InitAttackButton(ab1);
+			InitBlockButton(bb1);
+			mOldTime = SDL_GetTicks();
+			fOldTime = SDL_GetTicks();
 		}
 		
 		ResetBuffer ();
-
-
 
 		//==================================================================================
 		// Combat Loop Begin, STATES WITH TYPES OF ENEMIES
@@ -240,175 +289,135 @@ int main(int argc, char *argv[])
 		{
 			keys = SDL_GetKeyState(&keyn);
 			ResetBuffer ();
-			bg = SDL_DisplayFormat(temp);
-			fighterFlag = 1;
-			mageFlag = 1;
-			fighterTurn = 0;
-			mageTurn = 0;
+								
+			fCurrentTime = SDL_GetTicks();
+			fTime = ((fCurrentTime - fOldTime) / 1000.0);				/** Start Fighter Timer */
 
-			if (g_combatState == 1)											/** if collided with a bishop, enter combat with a bishop */
+										
+			mCurrentTime = SDL_GetTicks();
+			mTime = ((mCurrentTime - mOldTime) / 1000.0);				/** Start Mage Timer */
+
+			if(temp != NULL)						
+				bg = SDL_DisplayFormat(temp);
+			else
+				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
+
+			if(bg != NULL)
+				SDL_BlitSurface(bg,NULL,buffer,NULL);					/** Draw the combat background */
+			else
+				fprintf(stderr,"unable to load a vital sprite: %s\n",SDL_GetError());
+
+			SDL_Flip(buffer);											/** Update the buffer drawn too */
+			DrawPCs(f1, m1, screen);									/** Draw the playable characters to the screen */
+			DrawEnemy_C(b1, e1, cen1, s1, k1,g_combatState, screen);	/** Draw Enemy Combatants */
+			DrawButton_C(ab1,bb1,screen);								/** Draw GUI buttons to screen */
+			SDL_Flip(screen);											/** Update screen after items drawn */
+			DrawMouse();
+					
+
+			if (fTime > 2.5)
 			{
-				if(temp != NULL)						
-					bg = SDL_DisplayFormat(temp);
-
-				if(bg != NULL)
-					SDL_BlitSurface(bg,NULL,buffer,NULL);					/** Draw the combat background */
-				SDL_Flip(buffer);
-				DrawPCs(f1, m1, screen);									/** Draw the playable characters to the screen */
-				DrawEnemy_C(b1, e1, g_combatState, screen);					/** Draw Enemy Combatants */
-				DrawButton_C(ab1,bb1,screen);								/** Draw GUI buttons to screen */
-				
-				DrawMouse();
-					
-				//if(fighterFlag)
-				//{
-					f1->time = f1->time + SDL_GetTicks();						/** Start Fighter Timer */
-					if (f1->time > 700000)
+				DrawSprite(selector,screen,f1->x-6,f1->y-6,0);				/** Selector Test */
+				SDL_Flip(screen);
+				if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
+					( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
+				{
+					if(g_combatState == 1)
 					{
-						mageFlag = 0;												/** set flag to false to stop its counter */
-						DrawSprite(selector,screen,f1->x-6,f1->y-6,0);				/** Selector Test */
-						if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
-							( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
-						{
-							b1->health = (b1->health + b1->defense) - f1->attack;
-							damage = f1->attack - b1->defense;
-							char numDamage[10];
-							sprintf(numDamage,"%i",damage);
-							fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
-							SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
-							SDL_Flip(screen);
-							printf("COLLISION DETECTED!!!!!!! \n");
-							f1->time = 0;
-							mageFlag = 1;
-							SDL_Flip(screen);
-						}
-						/* ===Not done yet===
-						else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
-							( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
-						{
-							b1->health = b1->health - f1->attack + b1->defense;
-							printf("COLLISION DETECTED!!!!!!! \n");
-						}
-						*/
+						b1->health = (b1->health + b1->defense) - f1->attack;
+						damage = f1->attack - b1->defense;
 					}
-				//}
-
-				//if(mageFlag)
-				//{
-					m1->time = m1->time + SDL_GetTicks();						/** Start Mage Timer */
-					if (m1->time > 900000)
+					else if(g_combatState == 2)
 					{
-						fighterFlag = 0;											/** set flag to false to stop its counter */
-						DrawSprite(selector,screen,m1->x-6,m1->y-6,0);				/** Selector Test */
-						if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
-							( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
-						{
-							b1->health = (b1->health + b1->defense) - m1->attack;
-							damage = m1->attack - b1->defense;
-							char numDamage[10];
-							sprintf(numDamage,"%i",damage);
-							fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
-							SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
-							SDL_Flip(screen);
-							printf("COLLISION DETECTED!!!!!!! \n");
-							m1->time = 0;
-							fighterFlag = 1;										/**set flag back to true to resume counter */
-							SDL_Flip(screen);
-						}
-						/* ===Not done yet===
-						else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
-							( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
-						{
-							b1->health = b1->health - f1->attack + b1->defense;
-							printf("COLLISION DETECTED!!!!!!! \n");
-						}
-						*/
+						e1->health = (e1->health + e1->defense) - f1->attack;
+						damage = f1->attack - e1->defense;
 					}
-					
-				//}
-
-
+					else if(g_combatState == 3)
+					{
+						cen1->health = (cen1->health + cen1->defense) - f1->attack;
+						damage = f1->attack - cen1->defense;
+					}
+					else if(g_combatState == 4)
+					{
+						s1->health = (s1->health + s1->defense) - f1->attack;
+						damage = f1->attack - s1->defense;
+					}
+					else if(g_combatState == 5)
+					{
+						k1->health = (k1->health + k1->defense) - f1->attack;
+						damage = f1->attack - k1->defense;
+					}
+					char numDamage[10];
+					sprintf(numDamage,"%i",damage);
+					fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
+					SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
+					SDL_Flip(screen);
+					printf("COLLISION DETECTED!!!!!!! \n");
+					fCurrentTime = 0, fTime = 0;
+					fOldTime = SDL_GetTicks();
+					SDL_FreeSurface(fontdamage);
+				}
+				/* ===Not done yet===
+				else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
+					( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
+				{
+					b1->health = b1->health - f1->attack + b1->defense;
+					printf("COLLISION DETECTED!!!!!!! \n");
+				}
+				*/
 			}
 
-			if (g_combatState == 2)											/** if collided with a ettin, enter combat with a ettin */
+			if (mTime > 4.5)
 			{
-				if(temp != NULL)						
-					bg = SDL_DisplayFormat(temp);
-
-				if(bg != NULL)
-					SDL_BlitSurface(bg,NULL,buffer,NULL);					/** Draw the combat background */
-				SDL_Flip(buffer);
-				DrawPCs(f1, m1, screen);									/** Draw the playable characters to the screen */
-				DrawEnemy_C(b1, e1, g_combatState, screen);					/** Draw Enemy Combatants */
-				DrawButton_C(ab1,bb1,screen);								/** Draw GUI buttons to screen */
-				DrawMouse();
-
-				//if(fighterFlag)
-				//{
-					f1->time = f1->time + SDL_GetTicks();						/** Start Fighter Timer */
-					if (f1->time > 700000)
+				DrawSprite(selector,screen,m1->x-6,m1->y-6,0);				/** Selector Test */
+				if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
+					( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
+				{
+					if(g_combatState == 1)
 					{
-						mageFlag = 0;												/** set flag to false to stop its counter */
-						DrawSprite(selector,screen,f1->x-6,f1->y-6,0);				/** Selector Test */
-						if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
-							( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
-						{
-							e1->health = (e1->health + e1->defense) - f1->attack;
-							damage = f1->attack - b1->defense;
-							char numDamage[10];
-							sprintf(numDamage,"%i",damage);
-							fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
-							SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
-							SDL_Flip(screen);
-							printf("COLLISION DETECTED!!!!!!! \n");
-							f1->time = 0;
-							mageFlag = 1;
-							SDL_Flip(screen);
-						}
-						/* ===Not done yet===
-						else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
-							( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
-						{
-							b1->health = b1->health - f1->attack + b1->defense;
-							printf("COLLISION DETECTED!!!!!!! \n");
-						}
-						*/
+						b1->health = (b1->health + b1->defense) - m1->attack;
+						damage = m1->attack - b1->defense;
 					}
-				//}
-
-				//if(mageFlag)
-				//{
-					m1->time = m1->time + SDL_GetTicks();						/** Start Fighter Timer */
-					if (m1->time > 900000)
+					else if(g_combatState == 2)
 					{
-						fighterFlag = 0;											/** set flag to false to stop its counter */
-						DrawSprite(selector,screen,m1->x-6,m1->y-6,0);				/** Selector Test */
-						if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
-							( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
-						{
-							e1->health = (e1->health + e1->defense) - m1->attack;
-							damage = m1->attack - b1->defense;
-							char numDamage[10];
-							sprintf(numDamage,"%i",damage);
-							fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
-							SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
-							SDL_Flip(screen);
-							printf("COLLISION DETECTED!!!!!!! \n");
-							m1->time = 0;
-							fighterFlag = 1;
-							SDL_Flip(screen);
-						}
-						/* ===Not done yet===
-						else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
-							( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
-						{
-							b1->health = b1->health - f1->attack + b1->defense;
-							printf("COLLISION DETECTED!!!!!!! \n");
-						}
-						*/	
+						e1->health = (e1->health + e1->defense) - m1->attack;
+						damage = m1->attack - e1->defense;
 					}
-				//}
+					else if(g_combatState == 3)
+					{
+						cen1->health = (cen1->health + cen1->defense) - m1->attack;
+						damage = m1->attack - cen1->defense;
+					}
+					else if(g_combatState == 4)
+					{
+						s1->health = (s1->health + s1->defense) - m1->attack;
+						damage = m1->attack - s1->defense;
+					}
+					else if(g_combatState == 5)
+					{
+						k1->health = (k1->health + k1->defense) - m1->attack;
+						damage = m1->attack - k1->defense;
+					}
+					char numDamage[10];
+					sprintf(numDamage,"%i",damage);
+					fontdamage = TTF_RenderText_Solid(dmgfont,numDamage,dmgColor);
+					SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
+					SDL_Flip(screen);
+					printf("COLLISION DETECTED!!!!!!! \n");
+					mCurrentTime = 0, mTime = 0;
+					mOldTime = SDL_GetTicks();
+					SDL_FreeSurface(fontdamage);
+				}
+				/* ===Not done yet===
+				else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
+					( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
+				{
+					b1->health = b1->health - f1->attack + b1->defense;
+					printf("COLLISION DETECTED!!!!!!! \n");
+				}
+				*/
 			}
+
 			NextFrame();
 			SDL_PumpEvents();
 			SDL_Flip(screen);
@@ -419,7 +428,6 @@ int main(int argc, char *argv[])
 
 			if(b1->health <= 0 && g_combatState == 1)						/** If fighting a bishop and his HP goes below 0 End */
 			{
-				g_combatState = 0;
 				f1->exp = f1->exp + b1->exp;								/**Add exp to both the fighter and the mage */
 				m1->exp = m1->exp + b1->exp;
 				if (f1->exp > f1->nextlvl)									/** Condition to check for a level up*/
@@ -431,7 +439,7 @@ int main(int argc, char *argv[])
 					f1->lvl = f1->lvl + 1;
 					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
 					f1->hp = f1->maxhp;
-					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 
 				}
 
@@ -444,16 +452,17 @@ int main(int argc, char *argv[])
 					m1->lvl = m1->lvl + 1;
 					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
 					m1->hp = m1->maxhp;
-					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 
 				}
-				SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
+				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
 				FreeBishop(b1);												/** FIXTHIS -- removes from the map in other levels as well */
+				ResetBuffer();
+				g_combatState = 0;
 			}
 
 			if(e1->health <= 0 && g_combatState == 2)						/** If fighting an ettin and his HP goes below 0 End */
 			{
-				g_combatState = 0;
 				f1->exp = f1->exp + e1->exp;								/**Add exp to both the fighter and the mage */
 				m1->exp = m1->exp + e1->exp;
 				if (f1->exp > f1->nextlvl)									/** Condition to check for a level up*/
@@ -465,7 +474,7 @@ int main(int argc, char *argv[])
 					f1->lvl = f1->lvl + 1;
 					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
 					f1->hp = f1->maxhp;
-					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
 
 				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
@@ -477,11 +486,113 @@ int main(int argc, char *argv[])
 					m1->lvl = m1->lvl + 1;
 					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
 					m1->hp = m1->maxhp;
-					SDL_Delay(1500);										/** Delay for printing text to the screen for level up */
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
 				}
-				SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
+				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
 				FreeEttin(e1);												/** FIXTHIS -- removes from the map in other levels as well */
-				SDL_Flip(screen);
+				ResetBuffer();
+				g_combatState = 0;
+			}
+
+			if(cen1->health <= 0 && g_combatState == 3)						/** If fighting a Centaur and his HP goes below 0 End */
+			{
+				
+				f1->exp = f1->exp + cen1->exp;								/**Add exp to both the fighter and the mage */
+				m1->exp = m1->exp + cen1->exp;
+				if (f1->exp > f1->nextlvl)									/** Condition to check for a level up*/
+				{
+					f1->nextlvl = f1->nextlvl + (f1->nextlvl * .25);        /** if leveled up, increase stats */
+					f1->exp = 0; 
+					f1->attack = f1->attack + 3;
+					f1->defense = f1->defense +3;
+					f1->lvl = f1->lvl + 1;
+					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
+					f1->hp = f1->maxhp;
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+				}
+
+				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
+				{
+					m1->nextlvl = m1->nextlvl + (m1->nextlvl * .25);		/** if leveled up, increase stats */
+					m1->exp = 0;
+					m1->attack = m1->attack + 1;
+					m1->defense = m1->defense +1;
+					m1->lvl = m1->lvl + 1;
+					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
+					m1->hp = m1->maxhp;
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+				}
+				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
+				FreeCentaur(cen1);												/** FIXTHIS -- removes from the map in other levels as well */
+				ResetBuffer();
+				g_combatState = 0;
+			}
+
+			if(s1->health <= 0 && g_combatState == 4)						/** If fighting a Serpent and his HP goes below 0 End */
+			{
+				f1->exp = f1->exp + s1->exp;								/**Add exp to both the fighter and the mage */
+				m1->exp = m1->exp + s1->exp;
+				if (f1->exp > f1->nextlvl)									/** Condition to check for a level up*/
+				{
+					f1->nextlvl = f1->nextlvl + (f1->nextlvl * .25);        /** if leveled up, increase stats */
+					f1->exp = 0; 
+					f1->attack = f1->attack + 3;
+					f1->defense = f1->defense +3;
+					f1->lvl = f1->lvl + 1;
+					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
+					f1->hp = f1->maxhp;
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+				}
+
+				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
+				{
+					m1->nextlvl = m1->nextlvl + (m1->nextlvl * .25);		/** if leveled up, increase stats */
+					m1->exp = 0;
+					m1->attack = m1->attack + 1;
+					m1->defense = m1->defense +1;
+					m1->lvl = m1->lvl + 1;
+					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
+					m1->hp = m1->maxhp;
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+				}
+				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
+				FreeSerpent(s1);												/** FIXTHIS -- removes from the map in other levels as well */
+				ResetBuffer();
+				g_combatState = 0;
+			}
+
+			if(k1->health <= 0 && g_combatState == 5)						/** If fighting Korax and his HP goes below 0 End */
+			{
+				
+				f1->exp = f1->exp + k1->exp;								/**Add exp to both the fighter and the mage */
+				m1->exp = m1->exp + k1->exp;
+				if (f1->exp > f1->nextlvl)									/** Condition to check for a level up*/
+				{
+					f1->nextlvl = f1->nextlvl + (f1->nextlvl * .25);        /** if leveled up, increase stats */
+					f1->exp = 0; 
+					f1->attack = f1->attack + 3;
+					f1->defense = f1->defense +3;
+					f1->lvl = f1->lvl + 1;
+					f1->maxhp = f1->maxhp + (f1->maxhp *.1);
+					f1->hp = f1->maxhp;
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+				}
+
+				if (m1->exp > m1->nextlvl)									/** Condition to check for a level up*/
+				{
+					m1->nextlvl = m1->nextlvl + (m1->nextlvl * .25);		/** if leveled up, increase stats */
+					m1->exp = 0;
+					m1->attack = m1->attack + 1;
+					m1->defense = m1->defense +1;
+					m1->lvl = m1->lvl + 1;
+					m1->maxhp = m1->maxhp + (m1->maxhp *.1);
+					m1->hp = m1->maxhp;
+					SDL_Delay(1000);										/** Delay for printing text to the screen for level up */
+				}
+				//SDL_FreeSurface(bg);										/** Free the surface before ending the loop at the end */
+				FreeKorax(k1);												/** FIXTHIS -- removes from the map in other levels as well */
+				ResetBuffer();
+				g_combatState = 0;
 			}
 		}
 
@@ -489,14 +600,15 @@ int main(int argc, char *argv[])
 		// END Combat Loop
 		//==================================================================================
 
-		
+		SDL_Flip(buffer);
+		SDL_Flip(screen);
 		CharacterMove(c1,keys);
-		EnemyThink(b1, e1, screen);
+		EnemyThink(b1, e1, cen1, s1, k1, screen, g_currentLevel);
 		
 		if(keys[SDLK_k])													/** Stop Drawing the level if on the menu screen */
 			done = 0;
 		else
-			drawLevel(g_currentLevel,bordertile, grasstile, castletile, walltile, bloodtile, doortile, &maps[g_currentLevel], enemy_ettin, enemy_bishop, g_enemySpawned); /*draw level*/
+			drawLevel(g_currentLevel,bordertile, grasstile, castletile, walltile, bloodtile, doortile, &maps[g_currentLevel], g_enemySpawned); /*draw level*/
 		
 		if(keys[SDLK_k])													/** Stop Drawing the character if on the menu screen */
 			done = 0;
@@ -506,7 +618,8 @@ int main(int argc, char *argv[])
 		if(keys[SDLK_k])													/** Stop Drawing the Enemies if on the menu screen */
 			done = 0;
 		else
-			DrawEnemy(b1,e1,screen,g_currentLevel,g_enemySpawned);
+			DrawEnemy(b1,e1,cen1,s1,k1,screen,g_currentLevel,g_enemySpawned);
+
 		SDL_Flip(screen);
 		NextFrame();
 		SDL_PumpEvents();

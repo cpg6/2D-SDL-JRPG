@@ -64,7 +64,7 @@ void loadMap(Map *map, char *file)
 			map->tiles[j][i].teleportnum = c - 1 - '0'; //THANKS BO!
 		}
 	}
-
+	
 	for (i = 0; i<16;i++)												/** for loop to read enemy spawn locations to tiles*/
 	{
 		for(j=0;j<16;j++)
@@ -75,11 +75,12 @@ void loadMap(Map *map, char *file)
 			map->tiles[j][i].enemySpawn = c;
 		}
 	}
+	
 }
 
 
 void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *castletile, Sprite *walltile, 
-	Sprite *bloodtile, Sprite *doortile,Map *map, Sprite *ettin, Sprite *bishop, int enemySpawned)
+	Sprite *bloodtile, Sprite *doortile,Map *map, int enemySpawned)
 {
 	int i, j;
 		for(i = 0; i < 16; i++)
@@ -109,6 +110,7 @@ void drawLevel(int currentLevel, Sprite *bordertile, Sprite *grasstile, Sprite *
 				}
 			}
 		}
+		SDL_Flip(buffer);
 	/*
 		if (enemySpawned == 0)
 		{
