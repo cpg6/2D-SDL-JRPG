@@ -89,7 +89,8 @@ typedef struct Korax_T											/** Defining the Ettin monster Structure */
 	Sprite *ksprite;											/** Overworld Sprite image */
 	Sprite *ksprite_c;											/** Combat Sprite Image */
 	int health;													
-	int attack;													
+	int attack;
+	int special;
 	int defense;
 	int used;
 	float exp;													

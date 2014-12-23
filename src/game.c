@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
+#include <SDL_audio.h>
 #include "SDL.h"
 #include "SDL_image.h"
 #include "graphics.h"
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
 	SDL_Surface *temp, *temp2;
 	SDL_Surface *bg;
 	SDL_Surface *fontSurface1, *fontSurface2, *fontSurface3, *fontSurface4, *fontSurface5, *fontSurface6, *fontSurface7, *fontSurface8, *fontdamage,
-		*fontSurface9, *fontSurface10, *fontSurface11, *fontSurface12, *fontSurface13, *fontSurface14, *efontdamage;
+		*fontSurface9, *fontSurface10, *fontSurface11, *fontSurface12, *fontSurface13, *fontSurface14, *efontdamage, *e2fontdamage;
 	SDL_Surface *menuScreen;
 	
 
@@ -54,6 +56,13 @@ int main(int argc, char *argv[])
 	"levels/map2.txt",
 	"levels/map3.txt"
 	};
+
+	Mix_Music *worldMusic = NULL;
+	Mix_Music *battleMusic = NULL;
+	Mix_Music *bossMusic = NULL;
+	Mix_Chunk *fistEffect = NULL;
+	Mix_Chunk *magicEffect = NULL;
+	Mix_Chunk *shieldEffect = NULL;
 	
 	char fighterAttack[12];							/** character arrays for RPG Statistics */
 	char fighterDefense[12];
@@ -69,7 +78,7 @@ int main(int argc, char *argv[])
 	char fightermaxhp[20];
 
 	int collision1, collision2, collision3, collision4, collision5, mx, my, damage, eDamage;		/** collision checks and damage output */
-	int done, keyn, x, eThink;
+	int done, keyn, x, eThink, fBlock, mBlock, bossCount, fDamage, mDamage;
 	Uint8 *keys;
 	Init_All();
 	TTF_Init();
@@ -120,7 +129,10 @@ int main(int argc, char *argv[])
 	SDL_Color textColor = {176,6,6};
 	SDL_Color dmgColor = {255,255,255};
 
-
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+	fistEffect = Mix_LoadWAV("sounds/Fist.wav");
+	magicEffect = Mix_LoadWAV("sounds/bolt.wav");
+	shieldEffect = Mix_LoadWAV("sounds/shield.wav");
 
 	SDL_Rect textLoc1 = {100, 100, 0, 0};									/** SDL 1.2 Sucks, cant handle text very well, makes for very ineffecient stuff*/
 	SDL_Rect textLoc9 = {100, 125, 0, 0};
@@ -144,11 +156,14 @@ int main(int argc, char *argv[])
 
 	char numDamage[10];
 	char eNumDamage[10];
+	char fNumDamage[10];
+	char mNumDamage[10];
 
 	for(x=0;x<MAX_MAPS; x++)												/** Load the maps from text files into memory */
 		loadMap(&maps[x],map_files[x]);
 	TeleportCharacter(c1,g_currentLevel);									/**Conduct the first teleport of the character at start */
     done = 0;
+	bossCount = 0;
     do
     {
 		keys = SDL_GetKeyState(&keyn);
@@ -256,6 +271,14 @@ int main(int argc, char *argv[])
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
 			eOldTime = SDL_GetTicks();
+
+			Mix_HaltMusic();
+			Mix_FreeMusic(worldMusic);
+			worldMusic = NULL;
+			if(battleMusic == NULL)
+				battleMusic= Mix_LoadMUS("sounds/battle.wav");
+
+
 		}
 		if (collision2 == 1 && g_currentLevel == 0)
 		{
@@ -266,6 +289,12 @@ int main(int argc, char *argv[])
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
 			eOldTime = SDL_GetTicks();
+
+			Mix_HaltMusic();
+			Mix_FreeMusic(worldMusic);
+			worldMusic = NULL;
+			if(battleMusic == NULL)
+				battleMusic= Mix_LoadMUS("sounds/battle.wav");
 		}
 		if (collision3 == 1 && g_currentLevel == 1)
 		{
@@ -276,6 +305,12 @@ int main(int argc, char *argv[])
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
 			eOldTime = SDL_GetTicks();
+
+			Mix_HaltMusic();
+			Mix_FreeMusic(worldMusic);
+			worldMusic = NULL;
+			if(battleMusic == NULL)
+				battleMusic= Mix_LoadMUS("sounds/battle.wav");
 		}
 		if (collision4 == 1 && g_currentLevel == 1)
 		{
@@ -286,6 +321,12 @@ int main(int argc, char *argv[])
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
 			eOldTime = SDL_GetTicks();
+
+			Mix_HaltMusic();
+			Mix_FreeMusic(worldMusic);
+			worldMusic = NULL;
+			if(battleMusic == NULL)
+				battleMusic= Mix_LoadMUS("sounds/battle.wav");
 		}
 		if (collision5 == 1 && g_currentLevel == 2)
 		{
@@ -296,6 +337,12 @@ int main(int argc, char *argv[])
 			mOldTime = SDL_GetTicks();
 			fOldTime = SDL_GetTicks();
 			eOldTime = SDL_GetTicks();
+
+			Mix_HaltMusic();
+			Mix_FreeMusic(worldMusic);
+			worldMusic = NULL;
+			if(bossMusic == NULL)
+				bossMusic = Mix_LoadMUS("sounds/battletothedeath.wav");
 		}
 		
 		ResetBuffer ();
@@ -308,11 +355,15 @@ int main(int argc, char *argv[])
 		{
 			keys = SDL_GetKeyState(&keyn);
 			ResetBuffer ();
-								
+							
+			if((Mix_PlayingMusic() == 0) && (g_combatState == 1 || g_combatState == 2 || g_combatState ==3 || g_combatState == 4))
+				Mix_PlayMusic(battleMusic, -1);
+			if(Mix_PlayingMusic() == 0 && g_combatState == 5)
+				Mix_PlayMusic(bossMusic, -1);
+
 			fCurrentTime = SDL_GetTicks();
 			fTime = ((fCurrentTime - fOldTime) / 1000.0);				/** Start Fighter Timer */
-
-										
+					
 			mCurrentTime = SDL_GetTicks();
 			mTime = ((mCurrentTime - mOldTime) / 1000.0);				/** Start Mage Timer */
 
@@ -334,19 +385,22 @@ int main(int argc, char *argv[])
 			DrawButton_C(ab1,bb1,screen);								/** Draw GUI buttons to screen */
 			SDL_Flip(screen);											/** Update screen after items drawn */
 			DrawMouse();
-					
+			
+			if(f1->hp < 0)												/** Crude Way to handle a Players Death */
+				fTime = 0;
 
 			if (fTime > 2.5)
 			{
 				DrawSprite(selector,screen,f1->x-6,f1->y-6,0);				/** Selector Test */
 				SDL_Flip(screen);
+				fBlock = 0;
 				if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
 					( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
 				{
 					if(g_combatState == 1)
 					{
 						b1->health = (b1->health + b1->defense) - f1->attack;
-						damage = f1->attack - b1->defense;
+						damage = f1->attack - b1->defense;\
 					}
 					else if(g_combatState == 2)
 					{
@@ -373,24 +427,30 @@ int main(int argc, char *argv[])
 					SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
 					SDL_FreeSurface(fontdamage);
 					SDL_Flip(screen);
-					printf("COLLISION DETECTED!!!!!!! \n");
+					printf("COLLISION DETECTED!!!!!!! Attack\n");
+					Mix_PlayChannel(-1,fistEffect, 0);
 					fCurrentTime = 0, fTime = 0;
 					fOldTime = SDL_GetTicks();
 					
 				}
-				/* ===Not done yet===
-				else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
+				else if(SDL_GetMouseState(&mx,&my) && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
 					( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
 				{
-					b1->health = b1->health - f1->attack + b1->defense;
-					printf("COLLISION DETECTED!!!!!!! \n");
+					fBlock = 25;
+					printf("COLLISION DETECTED!!!!!!! Block\n");
+					Mix_PlayChannel(-1,shieldEffect, 0);
+					fCurrentTime = 0, fTime = 0;
+					fOldTime = SDL_GetTicks();
 				}
-				*/
 			}
+
+			if(m1->hp < 0)												/** Crude Way to handle a Players Death */
+				mTime = 0;
 
 			if (mTime > 4.5)
 			{
 				DrawSprite(selector,screen,m1->x-6,m1->y-6,0);				/** Selector Test */
+				mBlock = 0;
 				if(SDL_GetMouseState(&mx,&my) && (( mx > ab1->collision.x ) && ( mx < ab1->collision.x + ab1->collision.w ) &&	
 					( my > ab1->collision.y ) && ( my < ab1->collision.y + ab1->collision.h )))										/** check collision on attack button and mouse press*/
 				{
@@ -424,19 +484,21 @@ int main(int argc, char *argv[])
 					SDL_BlitSurface(fontdamage, NULL, screen, &dmgLoc1);
 					SDL_FreeSurface(fontdamage);
 					SDL_Flip(screen);
-					printf("COLLISION DETECTED!!!!!!! \n");
+					printf("COLLISION DETECTED!!!!!!! Attack\n");
+					Mix_PlayChannel(-1,magicEffect, 0);
 					mCurrentTime = 0, mTime = 0;
 					mOldTime = SDL_GetTicks();
 					
 				}
-				/* ===Not done yet===
-				else if(SDL_BUTTON_LEFT && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
+				else if(SDL_GetMouseState(&mx,&my) && (( mx > bb1->collision.x ) && ( mx < bb1->collision.x + bb1->collision.w ) && 
 					( my > bb1->collision.y ) && ( my < bb1->collision.y + bb1->collision.h )))
 				{
-					b1->health = b1->health - f1->attack + b1->defense;
-					printf("COLLISION DETECTED!!!!!!! \n");
+					mBlock = 25;
+					printf("COLLISION DETECTED!!!!!!! Block\n");
+					Mix_PlayChannel(-1,shieldEffect, 0);
+					mCurrentTime = 0, mTime = 0;
+					mOldTime = SDL_GetTicks();
 				}
-				*/
 			}
 
 			if(eTime > 4.0)
@@ -446,28 +508,36 @@ int main(int argc, char *argv[])
 					{
 						if(eThink == 1)			//Attack Fighter
 						{
-							f1->hp = (f1->hp + f1->defense) - b1->attack;
-							eDamage = b1->attack - f1->defense;
+							if((b1->attack - f1->defense - fBlock) > 0)
+								f1->hp = f1->hp - (b1->attack - f1->defense - fBlock);
+							eDamage = (b1->attack - f1->defense - fBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 							
 						}
 						else if(eThink == 2)	//Attack Mage
 						{
-							m1->hp = (m1->hp + m1->defense) - b1->attack;
-							eDamage = b1->attack - m1->defense;
+							if((b1->attack - m1->defense - mBlock) > 0)
+								m1->hp = m1->hp - (b1->attack - m1->defense - mBlock);
+							eDamage = (b1->attack - m1->defense - mBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
@@ -476,27 +546,35 @@ int main(int argc, char *argv[])
 					{
 						if(eThink == 1)			//Attack Fighter
 						{
-							f1->hp = (f1->hp + f1->defense) - e1->attack;
-							eDamage = e1->attack - f1->defense;
+							if((e1->attack - f1->defense - fBlock) > 0)
+								f1->hp = f1->hp - (e1->attack - f1->defense - fBlock);
+							eDamage = (e1->attack - f1->defense - fBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
 						else if(eThink == 2)	//Attack Mage
 						{
-							m1->hp = (m1->hp + m1->defense) - e1->attack;
-							eDamage = e1->attack - m1->defense;
+							if((e1->attack - m1->defense - mBlock) > 0)
+								m1->hp = m1->hp - (e1->attack - m1->defense - mBlock);
+							eDamage = (e1->attack - m1->defense - mBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
@@ -505,27 +583,35 @@ int main(int argc, char *argv[])
 					{
 						if(eThink == 1)			//Attack Fighter
 						{
-							f1->hp = (f1->hp + f1->defense) - cen1->attack;
-							eDamage = cen1->attack - f1->defense;
+							if((cen1->attack - f1->defense - fBlock) > 0)
+								f1->hp = f1->hp - (cen1->attack - f1->defense - fBlock);
+							eDamage = (cen1->attack - f1->defense - fBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
 						else if(eThink == 2)	//Attack Mage
 						{
-							m1->hp = (m1->hp + m1->defense) - cen1->attack;
-							eDamage = cen1->attack - m1->defense;
+							if((cen1->attack - m1->defense - mBlock) > 0)
+								m1->hp = m1->hp - (cen1->attack - m1->defense - mBlock);
+							eDamage = (cen1->attack - m1->defense - mBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
@@ -534,58 +620,103 @@ int main(int argc, char *argv[])
 					{
 						if(eThink == 1)			//Attack Fighter
 						{
-							f1->hp = (f1->hp + f1->defense) - s1->attack;
-							eDamage = s1->attack - f1->defense;
+							if((s1->attack - f1->defense - fBlock) > 0)
+								f1->hp = f1->hp - (s1->attack - f1->defense - fBlock);
+							eDamage = (s1->attack - f1->defense - fBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
 						else if(eThink == 2)	//Attack Mage
 						{
-							m1->hp = (m1->hp + m1->defense) - s1->attack;
-							eDamage = s1->attack - m1->defense;
+							if((s1->attack - m1->defense - mBlock) > 0)
+								m1->hp = m1->hp - (s1->attack - m1->defense - mBlock);
+							eDamage = (s1->attack - m1->defense - mBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
 					}
 				else if(g_combatState == 5)		//KORAX Attack
 					{
-						if(eThink == 1)			//Attack Fighter
+						bossCount+=1;
+						if((eThink == 1 || eThink == 2) && bossCount == 5) //Special Move that hurts whole Party
 						{
-							f1->hp = (f1->hp + f1->defense) - k1->attack;
-							eDamage = k1->attack - f1->defense;sprintf_s(eNumDamage,"%i",eDamage);
+							if((k1->special - f1->defense - fBlock) > 0)
+								f1->hp = f1->hp - (k1->special - f1->defense - fBlock);
+							fDamage = (k1->special - f1->defense - fBlock);
+							if(fDamage < 0)
+								fDamage = 0;
+							if((k1->special - m1->defense - mBlock) > 0)
+								m1->hp = m1->hp - (k1->special - m1->defense - mBlock);
+							mDamage = (k1->special - m1->defense - mBlock);
+							if(mDamage < 0)
+								mDamage = 0;
+							sprintf_s(fNumDamage,"%i",fDamage);
+							sprintf_s(mNumDamage,"%i",mDamage);
+							efontdamage = TTF_RenderText_Solid(dmgfont,fNumDamage,dmgColor);
+							e2fontdamage = TTF_RenderText_Solid(dmgfont,mNumDamage,dmgColor);
+							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
+							SDL_BlitSurface(e2fontdamage, NULL, screen, &dmgLoc3);
+							SDL_FreeSurface(efontdamage);
+							SDL_FreeSurface(e2fontdamage);
+							SDL_Flip(screen);
+							Mix_PlayChannel(-1,magicEffect, 0);
+							eCurrentTime = 0, eTime = 0;
+							eOldTime = SDL_GetTicks();
+							eThink = 0, bossCount = 0;
+						}
+						else if(eThink == 1)			//Attack Fighter
+						{
+							if((k1->attack - f1->defense - fBlock) > 0)
+								f1->hp = f1->hp - (k1->attack - f1->defense - fBlock);
+							eDamage = (k1->attack - f1->defense - fBlock);
+							if(eDamage < 0)
+								eDamage = 0;
+							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc2);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
 						else if(eThink == 2)	//Attack Mage
 						{
-							m1->hp = (m1->hp + m1->defense) - k1->attack;
-							eDamage = k1->attack - m1->defense;
+							if((k1->attack - m1->defense - mBlock) > 0)
+								m1->hp = m1->hp - (k1->attack - m1->defense - mBlock);
+							eDamage = (k1->attack - m1->defense - mBlock);
+							if(eDamage < 0)
+								eDamage = 0;
 							sprintf_s(eNumDamage,"%i",eDamage);
 							efontdamage = TTF_RenderText_Solid(dmgfont,eNumDamage,dmgColor);
 							SDL_BlitSurface(efontdamage, NULL, screen, &dmgLoc3);
 							SDL_FreeSurface(efontdamage);
 							SDL_Flip(screen);
 							eCurrentTime = 0, eTime = 0;
+							Mix_PlayChannel(-1,fistEffect, 0);
 							eOldTime = SDL_GetTicks();
 							eThink = 0;
 						}
+						
 					}
 			}
 
@@ -628,6 +759,9 @@ int main(int argc, char *argv[])
 				}
 				FreeBishop(b1);												/** FIXTHIS -- removes from the map in other levels as well */
 				g_combatState = 0;
+				Mix_HaltMusic();
+				Mix_FreeMusic(battleMusic);
+				battleMusic = NULL;
 			}
 
 			if(e1->health <= 0 && g_combatState == 2)						/** If fighting an ettin and his HP goes below 0 End */
@@ -659,6 +793,9 @@ int main(int argc, char *argv[])
 				}
 				FreeEttin(e1);												/** FIXTHIS -- removes from the map in other levels as well */
 				g_combatState = 0;
+				Mix_HaltMusic();
+				Mix_FreeMusic(battleMusic);
+				battleMusic = NULL;
 			}
 
 			if(cen1->health <= 0 && g_combatState == 3)						/** If fighting a Centaur and his HP goes below 0 End */
@@ -691,6 +828,9 @@ int main(int argc, char *argv[])
 				}
 				FreeCentaur(cen1);												/** FIXTHIS -- removes from the map in other levels as well */
 				g_combatState = 0;
+				Mix_HaltMusic();
+				Mix_FreeMusic(battleMusic);
+				battleMusic = NULL;
 			}
 
 			if(s1->health <= 0 && g_combatState == 4)						/** If fighting a Serpent and his HP goes below 0 End */
@@ -722,6 +862,9 @@ int main(int argc, char *argv[])
 				}
 				FreeSerpent(s1);												/** FIXTHIS -- removes from the map in other levels as well */
 				g_combatState = 0;
+				Mix_HaltMusic();
+				Mix_FreeMusic(battleMusic);
+				battleMusic = NULL;
 			}
 
 			if(k1->health <= 0 && g_combatState == 5)						/** If fighting Korax and his HP goes below 0 End */
@@ -754,6 +897,17 @@ int main(int argc, char *argv[])
 				}
 				FreeKorax(k1);												/** FIXTHIS -- removes from the map in other levels as well */
 				g_combatState = 0;
+				Mix_HaltMusic();
+				Mix_FreeMusic(bossMusic);
+				bossMusic = NULL;
+
+				if (f1->hp <= 0 && m1->hp <=0)								//Check if both players are dead
+				{
+					break;
+					done = 1;
+				}
+
+				
 			}
 		}
 
@@ -783,14 +937,24 @@ int main(int argc, char *argv[])
 
 		SDL_Flip(screen);
 		NextFrame();
+
+		if(worldMusic == NULL)
+			worldMusic = Mix_LoadMUS("sounds/darkworld.wav");
+		if(Mix_PlayingMusic() == 0)
+			Mix_PlayMusic(worldMusic, -1);
+
 		SDL_PumpEvents();
 		if(keys[SDLK_ESCAPE])done = 1;
   }while(!done);															/** End of the main game loop */
 
   FreeCharacter(c1);
   CloseSprites();
+  Mix_FreeChunk(fistEffect);
+  Mix_FreeChunk(magicEffect);
+  
+
   /*			
-  FreeEttin(e1);					Not needed since freed throughout the program
+  FreeEttin(e1);					Not needed since freed throughout the program i believe?
   FreeBishop(b1);
   FreeCentaur(cen1);
   FreeSerpent(s1);
@@ -810,6 +974,7 @@ int main(int argc, char *argv[])
   SDL_FreeSurface(fontSurface13);
   SDL_FreeSurface(fontSurface14);
   */
+  Mix_Quit();
   TTF_Quit();
   exit(0);		/*technically this will end the program, but the compiler likes all functions that can return a value TO return a value*/
   return 0;

@@ -102,6 +102,7 @@ void InitKorax(korax *sprite)												/** Init the Boss Korax */
 	sprite->exp = 75;
 	sprite->health = 500;
 	sprite->attack = 20;
+	sprite->special = 50;
 	sprite->defense = 5;
 	sprite->used = 1;
 	sprite->flag = 0;
